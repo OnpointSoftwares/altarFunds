@@ -1,23 +1,90 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 class User(AbstractUser):
+    ROLE_CHOICES = [
+        ('member', _('Member')),
+        ('pastor', _('Pastor')),
+        ('treasurer', _('Treasurer')),
+        ('auditor', _('Auditor')),
+        ('denomination_admin', _('Denomination Admin')),
+        ('system_admin', _('System Admin')),
+    ]
+    GENDER_CHOICES = [
+        ('male', _('Male')),
+        ('female', _('Female')),
+        ('other', _('Other')),
+    ]
+
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
+    church = models.ForeignKey('churches.Church', on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    is_church_admin = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    firebase_uid = models.CharField(max_length=128, blank=True, null=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
+    address_line1 = models.CharField(max_length=255, blank=True)
+    address_line2 = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    county = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=False)
+    push_notifications = models.BooleanField(default=True)
+    is_phone_verified = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
+    last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+    last_login_device = models.TextField(blank=True)
+    is_suspended = models.BooleanField(default=False)
+
+    def get_church_permissions(self):
+        # Placeholder for church-specific permissions
+        if self.is_superuser or self.role == 'system_admin':
+            return ['all']
+        
+        permissions = []
+        if self.role in ['pastor', 'treasurer', 'auditor', 'denomination_admin']:
+            permissions.append('can_manage_church')
+        if self.role in ['treasurer']:
+            permissions.append('can_manage_finances')
+            
+        return permissions
 
     class Meta:
         db_table = 'users'
 
 class Member(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='member')
-    church = models.ForeignKey('churches.Church', on_delete=models.CASCADE, related_name='members')
+    MEMBERSHIP_STATUS_CHOICES = [
+        ('visitor', _('Visitor')),
+        ('new_member', _('New Member')),
+        ('member', _('Member')),
+        ('inactive', _('Inactive')),
+    ]
+    MARITAL_STATUS_CHOICES = [
+        ('single', _('Single')),
+        ('married', _('Married')),
+        ('divorced', _('Divorced')),
+        ('widowed', _('Widowed')),
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='member_profile')
+    church = models.ForeignKey('churches.Church', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     membership_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    date_joined = models.DateField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    membership_status = models.CharField(max_length=20, choices=MEMBERSHIP_STATUS_CHOICES, default='new_member')
+    membership_date = models.DateField(null=True, blank=True)
+    id_number = models.CharField(max_length=20, blank=True)
+    kra_pin = models.CharField(max_length=20, blank=True)
+    occupation = models.CharField(max_length=100, blank=True)
+    employer = models.CharField(max_length=100, blank=True)
+    marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES, blank=True)
+    spouse_name = models.CharField(max_length=100, blank=True)
+    emergency_contact_name = models.CharField(max_length=100, blank=True)
+    emergency_contact_phone = models.CharField(max_length=20, blank=True)
+    departments = models.ManyToManyField('churches.Department', related_name='members', blank=True)
+    small_group = models.ForeignKey('churches.SmallGroup', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
+    is_tithe_payer = models.BooleanField(default=False)
+    preferred_giving_method = models.CharField(max_length=20, blank=True)
+    monthly_giving_goal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.church.name}"
@@ -27,8 +94,11 @@ class UserSession(models.Model):
     session_key = models.CharField(max_length=40)
     ip_address = models.GenericIPAddressField()
     user_agent = models.TextField(blank=True)
+    device_info = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
+    last_activity = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -36,3 +106,5 @@ class PasswordResetToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
+    used_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)

@@ -1,8 +1,8 @@
 from django.urls import path
-from . import views
+from .views import HealthCheckView
 
-app_name = '$app'
+app_name = 'common'
 
 urlpatterns = [
-    # URL patterns will be added here
+    path('', HealthCheckView.as_view(), name='health_check'),
 ]

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Church Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Church Administration Dashboard</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Placeholder cards -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Members</h2>
+            <p class="text-gray-600">Manage church members, view profiles, and handle registrations.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Giving</h2>
+            <p class="text-gray-600">Track tithes, offerings, and other contributions. View giving reports.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Campaigns</h2>
+            <p class="text-gray-600">Create and manage fundraising campaigns and pledges.</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Reports</h2>
+            <p class="text-gray-600">Generate financial and membership reports.</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Settings</h2>
+            <p class="text-gray-600">Configure church settings, payment methods, and user roles.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -27,9 +27,14 @@ urlpatterns = [
     
     # Health check
     path('api/health/', include('common.urls')),
+
+    # Dashboard
+    path('dashboard/', include('dashboard.urls')),
 ]
 
-# Serve media and static files in development
+# Serve static and media files in development
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

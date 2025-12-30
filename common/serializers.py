@@ -26,9 +26,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'first_name', 'last_name', 'full_name',
             'phone_number', 'role', 'role_display', 'is_active',
-            'created_at', 'updated_at'
+            'date_joined'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'is_active']
+        read_only_fields = ['id', 'date_joined', 'is_active']
 
 
 class SoftDeleteSerializer(serializers.ModelSerializer):

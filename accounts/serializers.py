@@ -63,15 +63,18 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """Create user with encrypted password"""
         validated_data.pop('password_confirm')
         validated_data.pop('firebase_token', None)
-        
+        church = validated_data.pop('church', None)
+
         password = validated_data.pop('password')
+        validated_data['username'] = validated_data['email']
+
         user = User.objects.create_user(**validated_data)
         user.set_password(password)
         user.save()
-        
+
         # Create member profile
-        Member.objects.create(user=user)
-        
+        Member.objects.create(user=user, church=church)
+
         return user
 
 
