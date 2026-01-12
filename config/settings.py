@@ -22,7 +22,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'altar-funds.com',
-    'www.altar-funds.com'
+    'www.altar-funds.com',
+    'altarfunds.pythonanywhere.com'
 ]
 
 # --------------------------------------------------
