@@ -7,6 +7,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.altarfunds.mobile.data.dao.ChurchDao
+import com.altarfunds.mobile.data.dao.GivingCategoryDao
+import com.altarfunds.mobile.data.dao.GivingTransactionDao
+import com.altarfunds.mobile.data.dao.NotificationDao
+import com.altarfunds.mobile.data.entities.GivingTransactionEntity
+import com.altarfunds.mobile.data.entities.GivingCategoryEntity
+import com.altarfunds.mobile.data.entities.ChurchEntity
+import com.altarfunds.mobile.data.entities.NotificationEntity
 
 @Database(
     entities = [

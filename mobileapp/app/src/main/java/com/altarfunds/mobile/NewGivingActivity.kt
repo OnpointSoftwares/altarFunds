@@ -1,6 +1,8 @@
 package com.altarfunds.mobile
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -235,7 +237,10 @@ class NewGivingActivity : AppCompatActivity() {
                     val paymentResponse = response.body()!!
                     
                     // Navigate to payment processing activity
-                    val intent = Intent(this@NewGivingActivity, PaymentProcessingActivity::class.java).apply {
+                    val intent = Intent(
+                        this@NewGivingActivity,
+                        PaymentProcessingActivity::class.java
+                    ).apply {
                         putExtra("transaction_id", transactionId)
                         putExtra("amount", amount)
                         putExtra("payment_request_id", paymentResponse.payment_request.request_id)

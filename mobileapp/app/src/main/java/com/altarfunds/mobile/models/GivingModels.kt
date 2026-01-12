@@ -12,6 +12,26 @@ data class LoginRequest(
     val os_version: String? = null
 )
 
+data class GoogleLoginRequest(
+    val firebase_token: String,
+    val device_token: String? = null,
+    val device_type: String = "android",
+    val device_id: String? = null,
+    val app_version: String? = null,
+    val os_version: String? = null
+)
+
+data class RegisterRequest(
+    val email: String,
+    val password: String,
+    val password_confirm: String,
+    val device_token: String? = null,
+    val device_type: String = "android",
+    val device_id: String? = null,
+    val app_version: String? = null,
+    val os_version: String? = null
+)
+
 data class LoginResponse(
     val access_token: String,
     val refresh_token: String,

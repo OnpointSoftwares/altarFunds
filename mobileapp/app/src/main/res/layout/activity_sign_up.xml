@@ -154,10 +154,40 @@
                 app:backgroundTint="#ff9f1c"
                 app:cornerRadius="13dp" />
 
+            <TextView
+                android:id="@+id/orTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/signupBtn"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="15dp"
+                android:text="Or"
+                android:textColor="#A1A1A1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/googleSignInBtn"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_below="@id/orTv"
+                android:layout_centerHorizontal="true"
+                android:layout_marginHorizontal="36dp"
+                android:backgroundTint="#08000000"
+                android:paddingTop="5dp"
+                android:stateListAnimator="@null"
+                android:text="Sign In With Google"
+                android:textAllCaps="false"
+                android:textColor="#606060"
+                android:textSize="15sp"
+                app:cornerRadius="13dp"
+                app:icon="@drawable/googleg_standard_color_18"
+                app:iconPadding="10dp"
+                app:iconTint="#00100D0D"
+                app:iconTintMode="src_atop" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/signupBtn"
+                android:layout_below="@id/googleSignInBtn"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="30dp"
                 android:gravity="center"
@@ -168,7 +198,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:fontFamily="@font/poppinsmedium"
-                    android:text="Already have an Accout?"
+                    android:text="Already have an Account?"
                     android:textColor="#777777" />
 
                 <TextView

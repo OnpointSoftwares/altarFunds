@@ -2,9 +2,6 @@ import logging
 from django.core.mail import send_mail
 from django.conf import settings
 from celery import shared_task
-from twilio.rest import Client
-import firebase_admin
-from firebase_admin import messaging
 
 logger = logging.getLogger('altar_funds')
 
@@ -26,52 +23,6 @@ def send_email_notification(subject, message, recipient_list, html_message=None)
         logger.error(f"Failed to send email: {e}")
 
 
-@shared_task
-def send_whatsapp_notification(to, message):
-    """Send WhatsApp notification asynchronously"""
-    try:
-        # Initialize Twilio client (you'll need to configure these)
-        account_sid = settings.TWILIO_ACCOUNT_SID
-        auth_token = settings.TWILIO_AUTH_TOKEN
-        client = Client(account_sid, auth_token)
-        
-        # Send WhatsApp message
-        message = client.messages.create(
-            body=message,
-            from_=f'whatsapp:{settings.TWILIO_WHATSAPP_NUMBER}',
-            to=f'whatsapp:{to}'
-        )
-        
-        logger.info(f"WhatsApp message sent to {to}")
-    except Exception as e:
-        logger.error(f"Failed to send WhatsApp message: {e}")
-
-
-@shared_task
-def send_push_notification(title, body, data, registration_tokens):
-    """Send push notification via Firebase Cloud Messaging"""
-    try:
-        # Initialize Firebase Admin SDK if not already initialized
-        if not firebase_admin._apps:
-            cred = firebase_admin.credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
-            firebase_admin.initialize_app(cred)
-        
-        # Create message
-        message = messaging.MulticastMessage(
-            notification=messaging.Notification(
-                title=title,
-                body=body,
-            ),
-            data=data,
-            tokens=registration_tokens,
-        )
-        
-        # Send message
-        response = messaging.send_multicast(message)
-        logger.info(f"Push notification sent: {response.success_count} successful, {response.failure_count} failed")
-        
-    except Exception as e:
-        logger.error(f"Failed to send push notification: {e}")
 
 
 class NotificationService:
@@ -95,11 +46,6 @@ class NotificationService:
         # Send email
         if member.email:
             send_email_notification.delay(subject, message, [member.email])
-        
-        # Send SMS/WhatsApp
-        if member.phone_number:
-            whatsapp_message = f"Thank you for your gift of KES {amount}. Transaction ID: {transaction_id}"
-            send_whatsapp_notification.delay(member.phone_number, whatsapp_message)
     
     @staticmethod
     def send_payment_failure_notification(member, amount, error_message):

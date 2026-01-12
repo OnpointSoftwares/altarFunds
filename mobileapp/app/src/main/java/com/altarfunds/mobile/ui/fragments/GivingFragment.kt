@@ -9,6 +9,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.altarfunds.mobile.NewGivingActivity
+import com.altarfunds.mobile.RecurringGivingActivity
+import com.altarfunds.mobile.TransactionDetailsActivity
+import com.altarfunds.mobile.TransactionHistoryActivity
 import com.altarfunds.mobile.databinding.FragmentGivingBinding
 import com.altarfunds.mobile.ui.adapters.GivingCategoryAdapter
 import com.altarfunds.mobile.ui.adapters.RecentTransactionAdapter
@@ -53,7 +57,7 @@ class GivingFragment : Fragment() {
         // Setup recent transactions recycler view
         recentTransactionAdapter = RecentTransactionAdapter { transaction ->
             // Handle transaction click - show details
-            showTransactionDetails(transaction.id)
+            showTransactionDetails(transaction.transaction_id)
         }
         
         binding.rvRecentTransactions.apply {

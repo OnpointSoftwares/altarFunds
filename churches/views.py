@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from django.db import transaction
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
@@ -45,17 +44,9 @@ class DenominationListCreateView(generics.ListCreateAPIView):
         else:
             return Denomination.objects.filter(is_active=True)
     
-    @extend_schema(
-        summary="List denominations",
-        description="Get list of all denominations"
-    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Create denomination",
-        description="Create a new denomination"
-    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -116,17 +107,9 @@ class ChurchListCreateView(generics.ListCreateAPIView):
         else:
             return Church.objects.filter(church=user.church)
     
-    @extend_schema(
-        summary="List churches",
-        description="Get list of churches based on user permissions"
-    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Register church",
-        description="Register a new church (pending verification)"
-    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -166,17 +149,9 @@ class ChurchDetailView(generics.RetrieveUpdateAPIView):
         else:
             return Church.objects.filter(church=user.church)
     
-    @extend_schema(
-        summary="Get church details",
-        description="Get detailed information about a specific church"
-    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Update church",
-        description="Update church information"
-    )
     def patch(self, request, *args, **kwargs):
         serializer = self.get_serializer(
             instance=self.get_object(),
@@ -220,10 +195,6 @@ class ChurchVerificationView(generics.UpdateAPIView):
                 status='pending'
             )
     
-    @extend_schema(
-        summary="Verify church",
-        description="Verify a pending church registration"
-    )
     def patch(self, request, *args, **kwargs):
         church = self.get_object()
         
@@ -263,10 +234,6 @@ class ChurchStatusUpdateView(generics.UpdateAPIView):
         else:
             return Church.objects.filter(denomination=user.church.denomination)
     
-    @extend_schema(
-        summary="Update church status",
-        description="Update church status (verified, suspended, closed)"
-    )
     def patch(self, request, *args, **kwargs):
         serializer = self.get_serializer(
             instance=self.get_object(),

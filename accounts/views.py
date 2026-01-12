@@ -10,8 +10,6 @@ from django.contrib import messages
 from .forms import LoginForm, RegisterForm
 from django.utils import timezone
 from django.db import transaction
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from drf_spectacular.types import OpenApiTypes
 
 from .models import User, Member, UserSession, PasswordResetToken
 from .serializers import (
@@ -33,11 +31,6 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [permissions.AllowAny]
     
-    @extend_schema(
-        summary="Register a new user",
-        description="Register a new user in the AltarFunds system",
-        responses={201: UserProfileSerializer}
-    )
     def post(self, request, *args, **kwargs):
         """Register new user"""
         serializer = self.get_serializer(data=request.data)
@@ -84,11 +77,6 @@ class UserLoginView(generics.GenericAPIView):
     serializer_class = UserLoginSerializer
     permission_classes = [permissions.AllowAny]
     
-    @extend_schema(
-        summary="User login",
-        description="Authenticate user and return JWT tokens",
-        responses={200: UserProfileSerializer}
-    )
     def post(self, request, *args, **kwargs):
         """Login user"""
         serializer = self.get_serializer(data=request.data)
@@ -212,18 +200,10 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         """Get current user"""
         return self.request.user
     
-    @extend_schema(
-        summary="Get user profile",
-        description="Get current user's profile information"
-    )
     def get(self, request, *args, **kwargs):
         """Get user profile"""
         return super().get(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Update user profile",
-        description="Update current user's profile information"
-    )
     def patch(self, request, *args, **kwargs):
         """Update user profile"""
         serializer = UserUpdateSerializer(
@@ -251,10 +231,6 @@ class PasswordChangeView(generics.GenericAPIView):
     serializer_class = PasswordChangeSerializer
     permission_classes = [permissions.IsAuthenticated]
     
-    @extend_schema(
-        summary="Change password",
-        description="Change current user's password"
-    )
     def post(self, request, *args, **kwargs):
         """Change password"""
         serializer = self.get_serializer(data=request.data)
@@ -279,10 +255,6 @@ class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [permissions.AllowAny]
     
-    @extend_schema(
-        summary="Request password reset",
-        description="Send password reset email to user"
-    )
     def post(self, request, *args, **kwargs):
         """Request password reset"""
         serializer = self.get_serializer(data=request.data)
@@ -339,10 +311,6 @@ class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = [permissions.AllowAny]
     
-    @extend_schema(
-        summary="Confirm password reset",
-        description="Reset password using token"
-    )
     def post(self, request, *args, **kwargs):
         """Confirm password reset"""
         serializer = self.get_serializer(data=request.data)

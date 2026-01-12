@@ -2,7 +2,6 @@ import logging
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
-from firebase_admin import auth
 from common.services import NotificationService
 from common.exceptions import AltarFundsException
 
@@ -14,47 +13,8 @@ class AuthService:
     """Service for authentication operations"""
     
     @staticmethod
-    def verify_firebase_token(firebase_token):
-        """Verify Firebase ID token"""
-        try:
-            decoded_token = auth.verify_id_token(firebase_token)
-            return decoded_token
-        except Exception as e:
-            logger.error(f"Firebase token verification failed: {e}")
-            raise AltarFundsException("Invalid Firebase token")
-    
-    @staticmethod
-    def link_firebase_account(user, firebase_token):
-        """Link Firebase account to user"""
-        try:
-            decoded_token = AuthService.verify_firebase_token(firebase_token)
-            firebase_uid = decoded_token['uid']
-            
-            # Check if Firebase UID is already linked to another user
-            if User.objects.filter(firebase_uid=firebase_uid).exclude(id=user.id).exists():
-                raise AltarFundsException("Firebase account is already linked to another user")
-            
-            user.firebase_uid = firebase_uid
-            user.is_phone_verified = True  # Assume phone is verified via Firebase
-            user.save(update_fields=['firebase_uid', 'is_phone_verified'])
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to link Firebase account: {e}")
-            raise AltarFundsException("Failed to link Firebase account")
-    
-    @staticmethod
-    def unlink_firebase_account(user):
-        """Unlink Firebase account from user"""
-        user.firebase_uid = None
-        user.save(update_fields=['firebase_uid'])
-        return True
-    
-    @staticmethod
     def verify_phone_number(user, verification_code):
         """Verify phone number with OTP code"""
-        # This would integrate with Firebase Phone Auth or SMS service
         # For now, we'll mark as verified
         user.is_phone_verified = True
         user.save(update_fields=['is_phone_verified'])
@@ -63,14 +23,11 @@ class AuthService:
     @staticmethod
     def send_phone_verification(user):
         """Send phone verification code"""
-        # This would integrate with Firebase Phone Auth or SMS service
+        # This would integrate with SMS service
         notification = f"Your verification code for AltarFunds is 123456"
         
         if user.phone_number:
-            NotificationService.send_whatsapp_notification(
-                to=user.phone_number,
-                message=notification
-            )
+            logger.info(f"Would send SMS to {user.phone_number}: {notification}")
         
         return True
 

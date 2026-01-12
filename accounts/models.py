@@ -35,7 +35,7 @@ class User(AbstractUser):
     city = models.CharField(max_length=100, blank=True)
     county = models.CharField(max_length=100, blank=True)
     postal_code = models.CharField(max_length=20, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    profile_picture = models.CharField(max_length=500, null=True, blank=True)
     email_notifications = models.BooleanField(default=True)
     sms_notifications = models.BooleanField(default=False)
     push_notifications = models.BooleanField(default=True)

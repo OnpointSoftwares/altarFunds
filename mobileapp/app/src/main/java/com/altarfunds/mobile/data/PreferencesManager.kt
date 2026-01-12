@@ -100,9 +100,7 @@ class PreferencesManager(context: Context) {
             memberId = member.id
         }
         
-        loginResponse.device.device_token?.let { token ->
-            deviceToken = token
-        }
+        deviceToken = loginResponse.device.device_token
     }
     
     fun isLoggedIn(): Boolean {

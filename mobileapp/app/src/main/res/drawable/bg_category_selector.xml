@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/toscaWhite" />
+            <corners android:radius="8dp" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/toscaSecondary" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white" />
+            <corners android:radius="8dp" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/mdtp_ampm_text_color" />
+        </shape>
+    </item>
+</selector>

@@ -6,6 +6,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Count, Sum
 from django.utils import timezone
 from datetime import timedelta, date
+import uuid
+import requests
 
 from .models import (
     MobileDevice, MobileAppSettings, MobileAppVersion, 
@@ -16,13 +18,18 @@ from .serializers import (
     UserSessionSerializer, MobileNotificationSerializer, MobileAppAnalyticsSerializer,
     MobileAppFeedbackSerializer, MobileLoginSerializer, MobileRegisterDeviceSerializer,
     MobilePushNotificationSerializer, MobileAppConfigSerializer, MobileUserProfileSerializer,
-    MobileGivingSummarySerializer, MobileChurchInfoSerializer, MobileQuickActionSerializer
+    MobileGivingSummarySerializer, MobileChurchInfoSerializer, MobileQuickActionSerializer,
+    MobileGoogleLoginSerializer, MobileRegisterSerializer, MemberSerializer
 )
-from accounts.serializers import UserSerializer, MemberSerializer
-from common.permissions import IsOwnerOrAdmin, CanManageChurchFinances
+from common.serializers import UserSerializer
+from django.contrib.auth import get_user_model
+from accounts.models import Member
+from common.permissions import IsOwnerOrReadOnly, CanManageChurchFinances
 from common.pagination import StandardResultsSetPagination
 from common.services import NotificationService, AuditService
 from .services import MobileAuthService, MobileNotificationService, MobileAnalyticsService
+
+User = get_user_model()
 
 
 class MobileLoginView(views.APIView):
@@ -72,11 +79,134 @@ class MobileLoginView(views.APIView):
                 'refresh_token': str(refresh),
                 'session_id': session.session_token,
                 'user': UserSerializer(user).data,
-                'member': MemberSerializer(user.member, context={'request': request}).data if hasattr(user, 'member') else None,
+                'member': MemberSerializer(user.member_profile).data if hasattr(user, 'member_profile') else None,
                 'device': MobileDeviceSerializer(device).data
             })
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MobileGoogleLoginView(views.APIView):
+    """Google Sign-In login endpoint (ID token)"""
+
+    permission_classes = []
+
+    def post(self, request):
+        serializer = MobileGoogleLoginSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        id_token = serializer.validated_data['firebase_token'] if 'firebase_token' in serializer.validated_data else serializer.validated_data.get('id_token')
+        if not id_token:
+            return Response({'error': 'id_token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify token with Google tokeninfo (keeps Android side free of Firebase requirements)
+        try:
+            token_info_resp = requests.get(
+                'https://oauth2.googleapis.com/tokeninfo',
+                params={'id_token': id_token},
+                timeout=10
+            )
+            if token_info_resp.status_code != 200:
+                return Response({'error': 'Invalid Google token'}, status=status.HTTP_400_BAD_REQUEST)
+
+            token_info = token_info_resp.json()
+        except Exception:
+            return Response({'error': 'Token verification failed'}, status=status.HTTP_400_BAD_REQUEST)
+
+        email = (token_info.get('email') or '').lower()
+        sub = token_info.get('sub')
+
+        if not email or not sub:
+            return Response({'error': 'Invalid token payload'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Find or create user
+        user = User.objects.filter(firebase_uid=sub).first() or User.objects.filter(email=email).first()
+        if not user:
+            user = User.objects.create_user(username=email, email=email)
+            user.set_unusable_password()
+            user.firebase_uid = sub
+            user.is_email_verified = token_info.get('email_verified') == 'true'
+            user.save()
+            Member.objects.get_or_create(user=user)
+        else:
+            if not user.firebase_uid:
+                user.firebase_uid = sub
+                user.save(update_fields=['firebase_uid'])
+            Member.objects.get_or_create(user=user)
+
+        # Register/update device
+        device_token = serializer.validated_data.get('device_token') or f"anon-{uuid.uuid4()}"
+        device_data = {
+            'user': user,
+            'device_token': device_token,
+            'device_type': serializer.validated_data.get('device_type', 'android'),
+            'device_id': serializer.validated_data.get('device_id'),
+            'app_version': serializer.validated_data.get('app_version'),
+            'os_version': serializer.validated_data.get('os_version')
+        }
+        device = MobileAuthService.register_device(device_data)
+
+        session = MobileAuthService.create_session(user, device, request)
+
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh),
+            'session_id': session.session_token,
+            'user': UserSerializer(user).data,
+            'member': MemberSerializer(user.member_profile).data if hasattr(user, 'member_profile') else None,
+            'device': MobileDeviceSerializer(device).data
+        })
+
+
+class MobileRegisterView(views.APIView):
+    """Mobile email/password registration endpoint"""
+
+    permission_classes = []
+
+    def post(self, request):
+        serializer = MobileRegisterSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data['email'].lower()
+        password = serializer.validated_data['password']
+
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.create_user(username=email, email=email)
+        user.set_password(password)
+        user.save()
+        Member.objects.get_or_create(user=user)
+
+        device_token = serializer.validated_data.get('device_token') or f"anon-{uuid.uuid4()}"
+        device_data = {
+            'user': user,
+            'device_token': device_token,
+            'device_type': serializer.validated_data.get('device_type', 'android'),
+            'device_id': serializer.validated_data.get('device_id'),
+            'app_version': serializer.validated_data.get('app_version'),
+            'os_version': serializer.validated_data.get('os_version')
+        }
+        device = MobileAuthService.register_device(device_data)
+        session = MobileAuthService.create_session(user, device, request)
+
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh),
+            'session_id': session.session_token,
+            'user': UserSerializer(user).data,
+            'member': MemberSerializer(user.member_profile).data if hasattr(user, 'member_profile') else None,
+            'device': MobileDeviceSerializer(device).data
+        }, status=status.HTTP_201_CREATED)
 
 
 class MobileRegisterDeviceView(views.APIView):
@@ -117,7 +247,7 @@ class MobileDeviceDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Mobile device details"""
     
     serializer_class = MobileDeviceSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     
     def get_queryset(self):
         return MobileDevice.objects.filter(user=self.request.user)
@@ -216,7 +346,7 @@ class MobileUserProfileView(views.APIView):
         
         profile_data = {
             'user': user,
-            'member': user.member if hasattr(user, 'member') else None,
+            'member': user.member_profile if hasattr(user, 'member_profile') else None,
             'devices': devices,
             'permissions': permissions
         }
@@ -233,10 +363,10 @@ class MobileGivingSummaryView(views.APIView):
         """Get giving summary for mobile dashboard"""
         user = request.user
         
-        if not hasattr(user, 'member') or not user.member:
+        if not hasattr(user, 'member_profile') or not user.member_profile:
             return Response({'error': 'Member profile not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        member = user.member
+        member = user.member_profile
         
         # Get giving statistics
         from giving.models import GivingTransaction, RecurringGiving

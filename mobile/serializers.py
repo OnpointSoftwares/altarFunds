@@ -4,7 +4,8 @@ from .models import (
     MobileDevice, MobileAppSettings, MobileAppVersion, 
     UserSession, MobileNotification, MobileAppAnalytics, MobileAppFeedback
 )
-from accounts.serializers import UserSerializer, MemberSerializer
+from common.serializers import UserSerializer
+from accounts.models import Member
 from common.serializers import BaseSerializer
 
 
@@ -137,6 +138,26 @@ class MobileAppFeedbackSerializer(BaseSerializer):
         ]
 
 
+class MemberSerializer(serializers.ModelSerializer):
+    member_type = serializers.CharField(source='membership_status')
+    join_date = serializers.DateField(source='membership_date', allow_null=True)
+    is_active = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Member
+        fields = [
+            'id',
+            'membership_number',
+            'member_type',
+            'join_date',
+            'is_active',
+            'church'
+        ]
+
+    def get_is_active(self, obj):
+        return obj.membership_status != 'inactive'
+
+
 # Mobile-specific serializers
 
 
@@ -174,6 +195,37 @@ class MobileLoginSerializer(serializers.Serializer):
         raise serializers.ValidationError('Email and password are required')
 
 
+class MobileGoogleLoginSerializer(serializers.Serializer):
+    firebase_token = serializers.CharField()
+    device_token = serializers.CharField(required=False)
+    device_type = serializers.ChoiceField(
+        choices=MobileDevice.DEVICE_TYPE_CHOICES,
+        required=False
+    )
+    device_id = serializers.CharField(required=False)
+    app_version = serializers.CharField(required=False)
+    os_version = serializers.CharField(required=False)
+
+
+class MobileRegisterSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True)
+    device_token = serializers.CharField(required=False)
+    device_type = serializers.ChoiceField(
+        choices=MobileDevice.DEVICE_TYPE_CHOICES,
+        required=False
+    )
+    device_id = serializers.CharField(required=False)
+    app_version = serializers.CharField(required=False)
+    os_version = serializers.CharField(required=False)
+
+    def validate(self, attrs):
+        if attrs.get('password') != attrs.get('password_confirm'):
+            raise serializers.ValidationError('Passwords do not match')
+        return attrs
+
+
 class MobileRegisterDeviceSerializer(serializers.Serializer):
     """Mobile device registration serializer"""
     
@@ -191,7 +243,7 @@ class MobilePushNotificationSerializer(serializers.Serializer):
     user_groups = serializers.ListField(child=serializers.CharField(), required=False)
     churches = serializers.ListField(child=serializers.UUIDField(), required=False)
     title = serializers.CharField(max_length=200)
-    message = serializers.TextField()
+    message = serializers.CharField(max_length=1000)
     data = serializers.JSONField(required=False)
     notification_type = serializers.ChoiceField(
         choices=MobileNotification.NOTIFICATION_TYPE_CHOICES,
@@ -214,7 +266,7 @@ class MobileUserProfileSerializer(serializers.Serializer):
     """Mobile user profile serializer"""
     
     user = UserSerializer()
-    member = MemberSerializer()
+    member = MemberSerializer(required=False, allow_null=True)
     devices = MobileDeviceSerializer(many=True, read_only=True)
     church_info = serializers.SerializerMethodField()
     permissions = serializers.ListField(read_only=True)

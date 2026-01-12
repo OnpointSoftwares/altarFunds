@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.altarfunds.mobile.TransactionDetailsActivity
 import com.altarfunds.mobile.databinding.FragmentHistoryBinding
 import com.altarfunds.mobile.ui.adapters.TransactionHistoryAdapter
 import com.altarfunds.mobile.utils.CurrencyUtils

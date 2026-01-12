@@ -5,7 +5,6 @@ import android.provider.Settings
 import android.os.Build
 import android.telephony.TelephonyManager
 import com.google.android.gms.tasks.Task
-import com.google.firebase.messaging.FirebaseMessaging
 
 object DeviceUtils {
     
@@ -50,17 +49,7 @@ object DeviceUtils {
             "1.0.0"
         }
     }
-    
-    fun getFirebaseToken(callback: (String?) -> Unit) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task: Task<String> ->
-            if (task.isSuccessful) {
-                val token = task.result
-                callback(token)
-            } else {
-                callback(null)
-            }
-        }
-    }
+
     
     fun getPhoneNumber(context: Context): String? {
         return try {
@@ -75,7 +64,7 @@ object DeviceUtils {
         return "${Build.MANUFACTURER} ${Build.MODEL}"
     }
     
-    fun getDeviceLanguage(): String {
+    fun getDeviceLanguage(context: Context): String {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             context.resources.configuration.locales[0].language
         } else {

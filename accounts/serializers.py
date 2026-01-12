@@ -6,8 +6,6 @@ from .models import User, Member, UserSession, PasswordResetToken
 from common.serializers import BaseSerializer, UserSerializer
 from common.validators import validate_phone_number, validate_id_number
 from common.exceptions import AltarFundsException
-import firebase_admin
-from firebase_admin import auth
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -19,14 +17,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validators=[validate_password]
     )
     password_confirm = serializers.CharField(write_only=True)
-    firebase_token = serializers.CharField(write_only=True, required=False)
     
     class Meta:
         model = User
         fields = [
             'email', 'first_name', 'last_name', 'phone_number',
-            'password', 'password_confirm', 'role', 'church',
-            'firebase_token'
+            'password', 'password_confirm', 'role', 'church'
         ]
         extra_kwargs = {
             'password': {'write_only': True},
@@ -48,21 +44,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError("Passwords don't match")
         
-        # Validate Firebase token if provided
-        firebase_token = attrs.get('firebase_token')
-        if firebase_token:
-            try:
-                decoded_token = auth.verify_id_token(firebase_token)
-                attrs['firebase_uid'] = decoded_token['uid']
-            except Exception:
-                raise serializers.ValidationError("Invalid Firebase token")
-        
         return attrs
     
     def create(self, validated_data):
         """Create user with encrypted password"""
         validated_data.pop('password_confirm')
-        validated_data.pop('firebase_token', None)
         church = validated_data.pop('church', None)
 
         password = validated_data.pop('password')
@@ -83,7 +69,6 @@ class UserLoginSerializer(serializers.Serializer):
     
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    firebase_token = serializers.CharField(write_only=True, required=False)
     
     def validate(self, attrs):
         """Validate login credentials"""
@@ -97,17 +82,6 @@ class UserLoginSerializer(serializers.Serializer):
         
         if not user.is_active:
             raise serializers.ValidationError("Account is suspended")
-        
-        # Validate Firebase token if provided
-        firebase_token = attrs.get('firebase_token')
-        if firebase_token:
-            try:
-                decoded_token = auth.verify_id_token(firebase_token)
-                if not user.firebase_uid:
-                    user.firebase_uid = decoded_token['uid']
-                    user.save()
-            except Exception:
-                pass  # Allow login without valid Firebase token
         
         attrs['user'] = user
         return attrs

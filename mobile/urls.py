@@ -6,6 +6,8 @@ app_name = 'mobile'
 urlpatterns = [
     # Authentication
     path('login/', views.MobileLoginView.as_view(), name='login'),
+    path('google-login/', views.MobileGoogleLoginView.as_view(), name='google-login'),
+    path('register/', views.MobileRegisterView.as_view(), name='register'),
     path('register-device/', views.MobileRegisterDeviceView.as_view(), name='register-device'),
     path('devices/', views.MobileDeviceListView.as_view(), name='device-list'),
     path('devices/<int:pk>/', views.MobileDeviceDetailView.as_view(), name='device-detail'),

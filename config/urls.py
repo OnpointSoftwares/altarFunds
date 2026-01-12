@@ -17,6 +17,7 @@ urlpatterns = [
     
     # API Modules
     path('api/accounts/', include('accounts.urls')),
+    path('api/mobile/', include('mobile.urls')),
     path('api/churches/', include('churches.urls')),
     path('api/giving/', include('giving.urls')),
     path('api/payments/', include('payments.urls')),

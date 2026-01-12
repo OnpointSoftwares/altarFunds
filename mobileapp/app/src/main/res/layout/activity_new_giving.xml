@@ -26,9 +26,9 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/white"
                 android:title="New Giving"
-                android:titleTextColor="@color/primary_color"
-                app:navigationIcon="@drawable/ic_back"
-                app:titleTextColor="@color/primary_color" />
+                android:titleTextColor="@color/toscaSecondary"
+                app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
+                app:titleTextColor="@color/toscaSecondary" />
 
         </com.google.android.material.appbar.AppBarLayout>
 

@@ -684,9 +684,9 @@ class GivingCampaign(TimeStampedModel):
     )
     
     # Additional Information
-    featured_image = models.ImageField(
-        _('Featured Image'),
-        upload_to='campaign_images/',
+    featured_image = models.CharField(
+        _('Featured Image URL'),
+        max_length=500,
         null=True,
         blank=True
     )

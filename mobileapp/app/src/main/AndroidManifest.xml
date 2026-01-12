@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.myapp.catatuang">
+    package="com.altarfunds.mobile">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
 
     <application
+        android:name=".AltarFundsApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,33 +16,44 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CatatUang"
+        android:theme="@style/Theme.AltarFunds"
         tools:targetApi="31">
         <activity
-            android:name=".ExportData"
+            android:name="com.myapp.catatuang.ExportData"
             android:exported="false" />
+
         <activity
-            android:name=".ForgotPassword"
+            android:name="com.myapp.catatuang.ForgotPassword"
             android:exported="false"
             android:screenOrientation="portrait" />
+
         <activity
-            android:name=".TransactionDetails"
+            android:name="com.myapp.catatuang.TransactionDetails"
             android:exported="false"
             android:screenOrientation="portrait" />
+
         <activity
-            android:name=".InsertionActivity"
+            android:name="com.myapp.catatuang.InsertionActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+
         <activity
-            android:name=".MainActivity"
+            android:name="com.myapp.catatuang.MainActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+
         <activity
-            android:name=".SignUp"
+            android:name="com.myapp.catatuang.SignUp"
             android:exported="false"
             android:screenOrientation="portrait" />
+
         <activity
-            android:name=".Login"
+            android:name="com.myapp.catatuang.Login"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name="com.altarfunds.mobile.LoginActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -50,6 +62,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.altarfunds.mobile.SignUpActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

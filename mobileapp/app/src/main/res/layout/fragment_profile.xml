@@ -366,7 +366,7 @@
                     android:textAlignment="textStart"
                     android:textColor="@color/text_primary"
                     app:cornerRadius="8dp"
-                    app:icon="@drawable/ic_history"
+                    app:icon="@drawable/ic_baseline_format_list_bulleted_24"
                     app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
@@ -440,7 +440,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="8dp"
-                    android:text="Help & Support"
+                    android:text="Help and Support"
                     android:textAlignment="textStart"
                     android:textColor="@color/text_primary"
                     app:cornerRadius="8dp"

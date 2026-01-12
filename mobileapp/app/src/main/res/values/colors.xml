@@ -14,4 +14,32 @@
     <color name="greenIncome">#489E4C</color>
     <color name="redExpense">#D11818</color>
     <color name="toscaDarker">#03A5A3</color>
+    <color name="mdtp_accent_color">#ff9f1c</color>
+    <color name="mdtp_ampm_text_color">#787878</color>
+    <!-- Material Design theme colors -->
+    <color name="colorPrimary">@color/toscaSecondary</color>
+    <color name="colorPrimaryVariant">#ff9f1c</color>
+    <color name="colorPrimaryDark">#ff9f1c</color>
+    <color name="colorAccent">@color/orangePrimary</color>
+    <color name="colorSecondary">@color/teal_200</color>
+    <color name="colorSecondaryVariant">@color/teal_700</color>
+    <color name="colorOnPrimary">@color/white</color>
+    <color name="colorOnSecondary">@color/black</color>
+    <!-- Semantic text colors -->
+    <color name="primary_color">@color/toscaSecondary</color>
+    <color name="accent_color">@color/orangePrimary</color>
+    <color name="text_primary">@color/black</color>
+    <color name="text_secondary">#787878</color>
+    <!-- Status colors -->
+    <color name="success_color">@color/greenIncome</color>
+    <color name="error_color">@color/redExpense</color>
+    <color name="warning_color">@color/orangePrimary</color>
+    <!-- Status colors -->
+    <color name="green">@color/greenIncome</color>
+    <color name="orange">@color/orangePrimary</color>
+    <color name="red">@color/redExpense</color>
+    <color name="gray">@color/mdtp_ampm_text_color</color>
+    <!-- Alpha colors -->
+    <color name="white_alpha_80">#CCFFFFFF</color>
+    <color name="white_alpha_60">#99FFFFFF</color>
 </resources>

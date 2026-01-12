@@ -9,6 +9,12 @@ interface ApiInterface {
     // Authentication
     @POST("mobile/login/")
     suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
+
+    @POST("mobile/google-login/")
+    suspend fun googleLogin(@Body googleLoginRequest: GoogleLoginRequest): Response<LoginResponse>
+
+    @POST("mobile/register/")
+    suspend fun register(@Body registerRequest: RegisterRequest): Response<LoginResponse>
     
     @POST("mobile/register-device/")
     suspend fun registerDevice(@Body deviceRequest: DeviceRegistrationRequest): Response<DeviceRegistrationResponse>

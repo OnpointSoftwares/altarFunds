@@ -16,7 +16,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/primary_color"
+            android:background="@color/toscaSecondary"
             android:title="AltarFunds"
             android:titleTextColor="@color/white"
             app:titleTextColor="@color/white" />
@@ -38,10 +38,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:backgroundTint="@color/accent_color"
+        android:backgroundTint="@color/mdtp_accent_color"
         android:contentDescription="New Giving"
         android:onClick="floatingActionButton"
-        android:src="@drawable/ic_give_now"
+        android:src="@drawable/ic_mobile_login_amico"
         app:tint="@color/white"
         app:maxImageSize="32dp" />
 
@@ -64,11 +64,11 @@
             android:background="@android:color/transparent"
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
-            app:cnb_backgroundColor="@color/transparent"
+            app:cnb_backgroundColor="@android:color/transparent"
             app:cnb_iconSize="24dp"
             app:cnb_menuResource="@menu/nav_menu"
             app:cnb_radius="24dp"
-            app:cnb_unselectedColor="@color/text_secondary" />
+            app:cnb_unselectedColor="@color/mdtp_ampm_text_color" />
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 

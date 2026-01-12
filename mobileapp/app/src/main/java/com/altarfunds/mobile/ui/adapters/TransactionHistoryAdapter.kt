@@ -76,7 +76,7 @@ class TransactionHistoryAdapter(
                     com.altarfunds.mobile.R.drawable.bg_status_failed
                 )
                 "refunded" -> Pair(
-                    com.altarfunds.mobile.R.color.purple,
+                    com.altarfunds.mobile.R.color.purple_200,
                     com.altarfunds.mobile.R.drawable.bg_status_refunded
                 )
                 else -> Pair(

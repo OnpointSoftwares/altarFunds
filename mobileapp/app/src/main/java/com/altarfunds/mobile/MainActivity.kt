@@ -27,16 +27,14 @@ class MainActivity : AppCompatActivity() {
         val profileFragment = ProfileFragment()
 
         // Set default fragment
-        binding.chipAppBar.setItemSelected(R.id.ic_giving, true)
+        binding.chipAppBar.setItemSelected(R.id.ic_transaction, true)
         makeCurrentFragment(givingFragment)
 
         // Set up bottom navigation
         binding.chipAppBar.setOnItemSelectedListener { itemId ->
             when (itemId) {
-                R.id.ic_giving -> makeCurrentFragment(givingFragment)
-                R.id.ic_history -> makeCurrentFragment(historyFragment)
-                R.id.ic_church -> makeCurrentFragment(churchFragment)
-                R.id.ic_profile -> makeCurrentFragment(profileFragment)
+                R.id.ic_transaction -> makeCurrentFragment(givingFragment)
+                R.id.ic_account -> makeCurrentFragment(profileFragment)
             }
             true
         }

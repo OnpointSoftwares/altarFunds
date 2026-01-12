@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.altarfunds.mobile.databinding.FragmentChurchBinding
 import com.bumptech.glide.Glide
+import kotlinx.coroutines.launch
 
 class ChurchFragment : Fragment() {
 
@@ -99,12 +100,12 @@ class ChurchFragment : Fragment() {
     private fun setupCampusList(campuses: List<com.altarfunds.mobile.models.Campus>) {
         if (campuses.isEmpty()) {
             binding.tvNoCampuses.visibility = View.VISIBLE
-            binding.rvCampuses.visibility = View.GONE
+           // binding.rvCampuses.visibility = View.GONE
             return
         }
         
         binding.tvNoCampuses.visibility = View.GONE
-        binding.rvCampuses.visibility = View.VISIBLE
+        //binding.rvCampuses.visibility = View.VISIBLE
         
         // Setup campus adapter (simplified for now)
         val campusNames = campuses.map { campus ->
@@ -117,13 +118,13 @@ class ChurchFragment : Fragment() {
 
     private fun setupDepartmentList(departments: List<com.altarfunds.mobile.models.Department>) {
         if (departments.isEmpty()) {
-            binding.tvNoDepartments.visibility = View.VISIBLE
-            binding.rvDepartments.visibility = View.GONE
+            //binding.tvNoDepartments.visibility = View.VISIBLE
+            //binding.llDepartmentList.visibility = View.GONE
             return
         }
         
-        binding.tvNoDepartments.visibility = View.GONE
-        binding.rvDepartments.visibility = View.VISIBLE
+        //binding.tvNoDepartments.visibility = View.GONE
+        //binding.rvDepartments.visibility = View.VISIBLE
         
         // Setup department adapter (simplified for now)
         val departmentInfo = departments.map { dept ->
@@ -131,18 +132,18 @@ class ChurchFragment : Fragment() {
         }
         
         // For simplicity, show as text for now
-        binding.tvDepartmentList.text = departmentInfo.joinToString("\n\n")
+        //binding.tvDepartmentList.text = departmentInfo.joinToString("\n\n")
     }
 
     private fun setupGivingCategories(categories: List<com.altarfunds.mobile.models.GivingCategory>) {
         if (categories.isEmpty()) {
-            binding.tvNoCategories.visibility = View.VISIBLE
-            binding.rvCategories.visibility = View.GONE
+           // binding.tvNoCategories.visibility = View.VISIBLE
+           // binding.llCategoryList.visibility = View.GONE
             return
         }
         
-        binding.tvNoCategories.visibility = View.GONE
-        binding.rvCategories.visibility = View.VISIBLE
+       // binding.tvNoCategories.visibility = View.GONE
+        //binding.llCategoryList.visibility = View.VISIBLE
         
         // Setup categories adapter (simplified for now)
         val categoryInfo = categories.map { category ->
@@ -150,7 +151,7 @@ class ChurchFragment : Fragment() {
         }
         
         // For simplicity, show as text for now
-        binding.tvCategoryList.text = categoryInfo.joinToString("\n\n")
+        //binding.tvCategoryList.text = categoryInfo.joinToString("\n\n")
     }
 
     private fun setupClickListeners() {
@@ -177,7 +178,7 @@ class ChurchFragment : Fragment() {
         }
         
         // Website
-        binding.llWebsite.setOnClickListener {
+        binding.llEmail.setOnClickListener {
             // Will be implemented when website is available
             Toast.makeText(requireContext(), "Website link coming soon", Toast.LENGTH_SHORT).show()
         }
@@ -197,11 +198,10 @@ class ChurchFragment : Fragment() {
         // View all campuses
         binding.btnViewAllCampuses.setOnClickListener {
             // Navigate to campuses list
-            Toast.makeText(requireContext(), "Campus details coming soon", Toast.LENGTH_SHORT).show()
         }
         
         // View all departments
-        binding.btnViewAllDepartments.setOnClickListener {
+       /* binding.btnViewAllDepartments.setOnClickListener {
             // Navigate to departments list
             Toast.makeText(requireContext(), "Department details coming soon", Toast.LENGTH_SHORT).show()
         }
@@ -210,6 +210,6 @@ class ChurchFragment : Fragment() {
         binding.btnViewAllCategories.setOnClickListener {
             // Navigate to categories list
             Toast.makeText(requireContext(), "Category details coming soon", Toast.LENGTH_SHORT).show()
-        }
+        }*/
     }
 }
