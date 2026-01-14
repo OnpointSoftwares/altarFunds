@@ -290,7 +290,7 @@ class UserSessionSerializer(serializers.ModelSerializer):
         model = UserSession
         fields = [
             'id', 'user_email', 'ip_address', 'user_agent', 'device_info',
-            'location', 'is_active', 'created_at', 'last_activity', 'duration'
+            'is_active', 'created_at', 'last_activity', 'duration'
         ]
     
     def get_duration(self, obj):
