@@ -193,8 +193,7 @@ class MobileRegisterView(views.APIView):
                 'error_code': 'EMAIL_EXISTS'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(username=email, email=email)
-        user.set_password(password)
+        user = User.objects.create_user(username=email, email=email, password=password)
         user.save()
         Member.objects.get_or_create(user=user)
 
