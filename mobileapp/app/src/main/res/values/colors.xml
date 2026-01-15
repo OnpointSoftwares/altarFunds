@@ -35,7 +35,6 @@
     <color name="error_color">@color/redExpense</color>
     <color name="warning_color">@color/orangePrimary</color>
     <!-- Status colors -->
-    <color name="green">@color/greenIncome</color>
     <color name="orange">@color/orangePrimary</color>
     <color name="red">@color/redExpense</color>
     <color name="gray">@color/mdtp_ampm_text_color</color>
@@ -45,4 +44,8 @@
     <!-- Additional colors for modern dashboard -->
     <color name="toscaPrimary">@color/toscaSecondary</color>
     <color name="toscaLight">#E8F6F3</color>
+    <!-- Additional colors for payment methods -->
+    <color name="blue">#2196F3</color>
+    <color name="green">#4CAF50</color>
+    <color name="light_gray">#F5F5F5</color>
 </resources>

@@ -9,14 +9,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.altarfunds.mobile.data.PreferencesManager
 import com.altarfunds.mobile.databinding.ActivitySettingsBinding
 import com.altarfunds.mobile.models.ChurchInfo
-import com.altarfunds.mobile.ui.adapters.ChurchAdapter
+import com.altarfunds.mobile.ui.adapters.ChurchInfoAdapter
 import kotlinx.coroutines.launch
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var preferencesManager: PreferencesManager
-    private lateinit var churchAdapter: ChurchAdapter
+    private lateinit var churchAdapter: ChurchInfoAdapter
     private var availableChurches: List<ChurchInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +45,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        churchAdapter = ChurchAdapter { church ->
+        churchAdapter = ChurchInfoAdapter { church ->
             selectChurch(church)
         }
         

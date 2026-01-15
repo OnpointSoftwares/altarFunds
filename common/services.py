@@ -82,6 +82,31 @@ class NotificationService:
         recipient_emails = [approver.email for approver in approvers if approver.email]
         if recipient_emails:
             send_email_notification.delay(subject, message, recipient_emails)
+    
+    @staticmethod
+    def send_church_registration_notification(church):
+        """Send church registration notification to admins"""
+        subject = f"New Church Registration: {church.name}"
+        message = f"""
+        A new church has been registered and requires verification.
+        
+        Church Details:
+        Name: {church.name}
+        Code: {church.church_code}
+        Type: {church.church_type}
+        Location: {church.city}, {church.county}
+        Phone: {church.phone_number}
+        Email: {church.email}
+        
+        Please review and verify the church registration in the AltarFunds admin portal.
+        """
+        
+        # Send to system admins (you may want to configure admin emails)
+        from accounts.models import User
+        admin_emails = User.objects.filter(role='system_admin', email__isnull=False).values_list('email', flat=True)
+        
+        if admin_emails:
+            send_email_notification.delay(subject, message, list(admin_emails))
 
 
 @shared_task

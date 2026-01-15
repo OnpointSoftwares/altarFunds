@@ -19,6 +19,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     'localhost',
     '127.0.0.1:3000',
     'altar-funds.com',
@@ -49,16 +50,20 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     'accounts',
-    'mobile',
+    'common',
     'churches',
     'giving',
     'payments',
+    'mobile',
+    'dashboard',
+    'expenses',
+    'budgets',
+    'donations',
+    'members',
+    'notifications',
+    'audit',
     'accounting',
     'reports',
-    'audit',
-    'notifications',
-    'common',
-    'dashboard',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

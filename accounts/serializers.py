@@ -92,6 +92,7 @@ class UserProfileSerializer(UserSerializer):
     
     member_profile = serializers.SerializerMethodField()
     church_name = serializers.CharField(source='church.name', read_only=True)
+    church_info = serializers.SerializerMethodField()
     role_display = serializers.CharField(source='get_role_display', read_only=True)
     permissions = serializers.SerializerMethodField()
     
@@ -99,7 +100,7 @@ class UserProfileSerializer(UserSerializer):
         fields = UserSerializer.Meta.fields + [
             'date_of_birth', 'gender', 'address_line1', 'address_line2',
             'city', 'county', 'postal_code', 'profile_picture',
-            'church_name', 'member_profile', 'permissions',
+            'church_name', 'church_info', 'member_profile', 'permissions',
             'email_notifications', 'sms_notifications', 'push_notifications',
             'is_phone_verified', 'is_email_verified'
         ]
@@ -111,6 +112,13 @@ class UserProfileSerializer(UserSerializer):
             return MemberProfileSerializer(member).data
         except Member.DoesNotExist:
             return None
+    
+    def get_church_info(self, obj):
+        """Get church information"""
+        if obj.church:
+            from churches.serializers import ChurchListSerializer
+            return ChurchListSerializer(obj.church).data
+        return None
     
     def get_permissions(self, obj):
         """Get user's permissions"""

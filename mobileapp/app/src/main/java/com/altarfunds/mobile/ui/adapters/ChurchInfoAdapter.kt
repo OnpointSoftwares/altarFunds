@@ -7,18 +7,17 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.altarfunds.mobile.databinding.ItemChurchBinding
 import com.altarfunds.mobile.models.ChurchInfo
-import com.altarfunds.mobile.models.ChurchSearchResult
 
-class ChurchAdapter(
-    private val onChurchClick: (ChurchSearchResult) -> Unit = {}
-) : ListAdapter<ChurchSearchResult, ChurchAdapter.ViewHolder>(DiffCallback) {
+class ChurchInfoAdapter(
+    private val onChurchClick: (ChurchInfo) -> Unit = {}
+) : ListAdapter<ChurchInfo, ChurchInfoAdapter.ViewHolder>(DiffCallback) {
 
-    // Constructor for MemberDashboardActivity
-    constructor(churches: List<ChurchSearchResult>) : this({}) {
+    // Constructor for SettingsActivity
+    constructor(churches: List<ChurchInfo>) : this({}) {
         submitList(churches)
     }
 
-    fun updateChurches(churches: List<ChurchSearchResult>) {
+    fun updateChurches(churches: List<ChurchInfo>) {
         submitList(churches)
     }
 
@@ -39,11 +38,11 @@ class ChurchAdapter(
         private val binding: ItemChurchBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(church: ChurchSearchResult) {
+        fun bind(church: ChurchInfo) {
             binding.apply {
                 tvChurchName.text = church.name
                 tvChurchCode.text = church.code
-                tvChurchDescription.text = church.location
+                tvChurchDescription.text = church.description
                 
                 // Set verification status
                 if (church.is_verified) {
@@ -54,9 +53,14 @@ class ChurchAdapter(
                     tvVerificationStatus.setTextColor(android.graphics.Color.YELLOW)
                 }
                 
-                // Set active status (always active for search results)
-                tvActiveStatus.text = "Active"
-                tvActiveStatus.setTextColor(android.graphics.Color.GREEN)
+                // Set active status
+                if (church.is_active) {
+                    tvActiveStatus.text = "Active"
+                    tvActiveStatus.setTextColor(android.graphics.Color.GREEN)
+                } else {
+                    tvActiveStatus.text = "Inactive"
+                    tvActiveStatus.setTextColor(android.graphics.Color.RED)
+                }
                 
                 root.setOnClickListener {
                     onChurchClick(church)
@@ -66,17 +70,17 @@ class ChurchAdapter(
     }
 
     companion object {
-        private val DiffCallback = object : DiffUtil.ItemCallback<ChurchSearchResult>() {
+        private val DiffCallback = object : DiffUtil.ItemCallback<ChurchInfo>() {
             override fun areItemsTheSame(
-                oldItem: ChurchSearchResult,
-                newItem: ChurchSearchResult
+                oldItem: ChurchInfo,
+                newItem: ChurchInfo
             ): Boolean {
                 return oldItem.id == newItem.id
             }
 
             override fun areContentsTheSame(
-                oldItem: ChurchSearchResult,
-                newItem: ChurchSearchResult
+                oldItem: ChurchInfo,
+                newItem: ChurchInfo
             ): Boolean {
                 return oldItem == newItem
             }

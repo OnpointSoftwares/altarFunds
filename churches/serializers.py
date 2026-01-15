@@ -101,7 +101,7 @@ class ChurchRegistrationSerializer(serializers.ModelSerializer):
             'address_line1', 'address_line2', 'city', 'county', 'postal_code',
             'senior_pastor_name', 'senior_pastor_phone', 'senior_pastor_email',
             'established_date', 'membership_count', 'average_attendance',
-            'registration_number', 'registration_date'
+            'registration_number', 'registration_date', 'description'
         ]
     
     def validate_phone_number(self, value):
@@ -119,13 +119,22 @@ class ChurchRegistrationSerializer(serializers.ModelSerializer):
         return validate_church_name(value)
     
     def create(self, validated_data):
-        """Create church with pending status"""
+        """Create church with pending status and assign user as church admin"""
+        # Get the current user who is registering the church
+        user = self.context['request'].user
+        
         church = Church.objects.create(
             status='pending',
             is_verified=False,
             **validated_data
         )
         church.generate_church_code()
+        
+        # Assign the registering user as the church admin
+        user.church = church
+        user.role = 'denomination_admin'  # or 'pastor' depending on your preference
+        user.save()
+        
         return church
 
 

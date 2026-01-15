@@ -156,6 +156,7 @@ class Church(TimeStampedModel, SoftDeleteModel):
     # Registration Details
     registration_number = models.CharField(_('Registration Number'), max_length=50, blank=True)
     registration_date = models.DateField(_('Registration Date'), null=True, blank=True)
+    description = models.TextField(_('Description'), blank=True)
     
     # Status and Verification
     status = models.CharField(
@@ -203,9 +204,7 @@ class Church(TimeStampedModel, SoftDeleteModel):
             city_code = self.city[:3].upper() if self.city else 'UNK'
             count = Church.objects.filter(church_code__startswith=city_code).count()
             self.church_code = f"{city_code}{count + 1:03d}"
-            sequence = 1
         
-        self.church_code = f"{city_abbr}{sequence:03d}"
         self.save()
         return self.church_code
     
