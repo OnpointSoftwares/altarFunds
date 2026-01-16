@@ -135,11 +135,41 @@
                     app:backgroundTint="#21000000"/>
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/churchCodeLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/passRetypeLayout"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingLeft="36dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_church" />
+
+                <EditText
+                    android:id="@+id/churchCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginBottom="10dp"
+                    android:hint="Church Code (optional)"
+                    android:inputType="text"
+                    android:paddingVertical="18dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="#787878"
+                    app:backgroundTint="#21000000"/>
+            </LinearLayout>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/signupBtn"
                 android:layout_width="match_parent"
                 android:layout_height="55dp"
-                android:layout_below="@id/passRetypeLayout"
+                android:layout_below="@id/churchCodeLayout"
                 android:layout_centerHorizontal="true"
                 android:layout_marginHorizontal="36dp"
                 android:layout_marginTop="30dp"

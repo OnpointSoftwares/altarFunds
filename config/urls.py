@@ -36,6 +36,9 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', include('dashboard.urls')),
+    
+    # API Dashboard endpoints
+    path('api/dashboard/', include('dashboard.urls')),
 
     # Template-based Authentication
     path('', include('accounts.auth_urls')),

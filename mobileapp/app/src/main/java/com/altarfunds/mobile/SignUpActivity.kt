@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.altarfunds.mobile.api.ApiService
 import com.altarfunds.mobile.databinding.ActivitySignUpBinding
+import com.altarfunds.mobile.models.ChurchJoinRequest
 import com.altarfunds.mobile.models.GoogleLoginRequest
 import com.altarfunds.mobile.models.RegisterRequest
 import com.altarfunds.mobile.utils.DeviceUtils
@@ -51,6 +52,7 @@ class SignUpActivity : AppCompatActivity() {
         val email = binding.email.text.toString().trim()
         val password = binding.password.text.toString().trim()
         val passwordConfirm = binding.passwordRetype.text.toString().trim()
+        val churchCode = binding.churchCode.text.toString().trim()
 
         if (!ValidationUtils.isValidEmail(email)) {
             binding.email.error = "Invalid email address"
@@ -92,20 +94,59 @@ class SignUpActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     val loginResponse = response.body()!!
                     (application as AltarFundsApp).preferencesManager.saveUserSession(loginResponse)
-                    startActivity(Intent(this@SignUpActivity, MemberDashboardActivity::class.java))
-                    finish()
+                    
+                    // If church code provided, try to join church
+                    if (churchCode.isNotEmpty()) {
+                        try {
+                            val churchJoinReq = ChurchJoinRequest(
+                                church_name = "", // Will be resolved by backend
+                                church_code = churchCode,
+                                user_id = loginResponse.user.id
+                            )
+                            
+                            val churchJoinResponse = ApiService.getApiInterface().joinChurch(churchJoinReq)
+                            if (churchJoinResponse.isSuccessful) {
+                                Toast.makeText(
+                                    this@SignUpActivity,
+                                    "Successfully joined church!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                startActivity(Intent(this@SignUpActivity, MemberDashboardActivity::class.java))
+                                finish()
+                            } else {
+                                Toast.makeText(
+                                    this@SignUpActivity,
+                                    "Church joining failed: ${churchJoinResponse.message()}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            // If church joining fails, still proceed to dashboard
+                            Toast.makeText(
+                                this@SignUpActivity,
+                                "Church joining failed, proceeding to dashboard",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            startActivity(Intent(this@SignUpActivity, MemberDashboardActivity::class.java))
+                            finish()
+                        }
+                    } else {
+                        // No church code, proceed to dashboard
+                        startActivity(Intent(this@SignUpActivity, MemberDashboardActivity::class.java))
+                        finish()
+                    }
                 } else {
                     Toast.makeText(
                         this@SignUpActivity,
-                        "Sign up failed: ${response.message()}",
-                        Toast.LENGTH_LONG
+                        "Registration failed: ${response.message()}",
+                        Toast.LENGTH_SHORT
                     ).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(
                     this@SignUpActivity,
-                    "Sign up failed: ${e.message}",
-                    Toast.LENGTH_LONG
+                    "Registration error: ${e.message}",
+                    Toast.LENGTH_SHORT
                 ).show()
             } finally {
                 setLoading(false)

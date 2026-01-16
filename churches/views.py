@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django.db import transaction
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
 from django import forms
@@ -23,6 +23,52 @@ from .serializers import (
 from common.permissions import IsChurchAdmin, IsDenominationAdmin, IsSystemAdmin
 from common.services import AuditService
 from common.exceptions import AltarFundsException
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def join_church(request):
+    """Join a church using church code."""
+    church_code = request.data.get('church_code', '').strip()
+    church_name = request.data.get('church_name', '').strip()
+    user_id = request.data.get('user_id')
+    
+    if not church_code:
+        return Response(
+            {'error': 'Church code is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        # Find church by code
+        church = Church.objects.get(code=church_code.upper())
+        
+        # Get current user
+        user = request.user
+        
+        # Assign church to user
+        user.church = church
+        user.save()
+        
+        return Response({
+            'message': f'Successfully joined {church.name}',
+            'church': {
+                'id': church.id,
+                'name': church.name,
+                'code': church.code
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Church.DoesNotExist:
+        return Response(
+            {'error': 'Invalid church code. Please check and try again.'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to join church: {str(e)}'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 class DenominationListCreateView(generics.ListCreateAPIView):

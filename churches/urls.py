@@ -8,8 +8,9 @@ from .views import (
     ChurchBankAccountListCreateView, ChurchBankAccountDetailView,
     MpesaAccountListCreateView, MpesaAccountDetailView,
     church_summary, church_options, department_options, small_group_options,
-    ChurchRegistrationView
+    ChurchRegistrationView, join_church
 )
+from .search_views import search_churches
 
 app_name = 'churches'
 
@@ -35,4 +36,6 @@ urlpatterns = [
     path('options/churches/', church_options, name='church_options'),
     path('options/departments/', department_options, name='department_options'),
     path('options/small-groups/', small_group_options, name='small_group_options'),
+    path('join/', join_church, name='join_church'),
+    path('search/', search_churches, name='search_churches'),
 ]

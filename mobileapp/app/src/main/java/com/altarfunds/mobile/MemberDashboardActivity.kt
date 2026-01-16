@@ -2,20 +2,27 @@ package com.altarfunds.mobile
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.altarfunds.mobile.api.ApiService
 import com.altarfunds.mobile.databinding.ActivityMemberDashboardBinding
 import com.altarfunds.mobile.ui.adapters.TransactionHistoryAdapter
 import com.altarfunds.mobile.ui.adapters.PledgeAdapter
 import com.altarfunds.mobile.ui.adapters.ChurchAdapter
 import com.altarfunds.mobile.models.*
 import com.altarfunds.mobile.utils.CurrencyUtils
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class MemberDashboardActivity : AppCompatActivity() {
 
@@ -69,22 +76,22 @@ class MemberDashboardActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 // Load enhanced dashboard data
-                val enhancedDashboardResponse = com.altarfunds.mobile.api.ApiService.getApiInterface().getEnhancedDashboard()
+                val enhancedDashboardResponse = ApiService.getApiInterface().getEnhancedDashboard()
                 
                 // Load recent transactions (still needed for detailed view)
-                val transactionsResponse = com.altarfunds.mobile.api.ApiService.getApiInterface().getGivingTransactions()
+                val transactionsResponse = ApiService.getApiInterface().getGivingTransactions()
                 
                 // Load pledges (still needed for pledge management)
-                val pledgesResponse = com.altarfunds.mobile.api.ApiService.getApiInterface().getPledges()
+                val pledgesResponse = ApiService.getApiInterface().getPledges()
                 
                 // Load user profile (still needed for user info)
-                val profileResponse = com.altarfunds.mobile.api.ApiService.getApiInterface().getUserProfile()
+                val profileResponse = ApiService.getApiInterface().getUserProfile()
 
                 // Load churches for transfer functionality (still needed)
-                val churchesResponse = com.altarfunds.mobile.api.ApiService.getApiInterface().searchChurches(query = "", location = null)
+                val churchesResponse = ApiService.getApiInterface().searchChurches(query = "", location = null)
 
                 // Wait for all requests to complete
-                kotlinx.coroutines.delay(100)
+                delay(100)
 
                 // Update UI with enhanced dashboard data
                 updateUIWithEnhancedDashboardData(
@@ -155,7 +162,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     
     private fun updateChurchMetricsWithBasicUI(churchMetrics: ChurchMetrics) {
         // Log church metrics since we don't have specific UI elements
-        android.util.Log.d("Dashboard", "Church Metrics: ${churchMetrics.total_members} total, ${churchMetrics.active_members} active, ${churchMetrics.member_growth_rate}% growth")
+        Log.d("Dashboard", "Church Metrics: ${churchMetrics.total_members} total, ${churchMetrics.active_members} active, ${churchMetrics.member_growth_rate}% growth")
         
         // Could show member count in church name temporarily
         binding.tvMemberChurch.text = "${churchMetrics.total_members} members"
@@ -163,7 +170,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     
     private fun updateQuickStatsWithBasicUI(quickStats: QuickStats) {
         // Log quick stats since we don't have specific UI elements
-        android.util.Log.d("Dashboard", "Quick Stats: Avg monthly: ${quickStats.avg_monthly_giving}, Goal progress: ${quickStats.giving_goal_progress.progress}%")
+        Log.d("Dashboard", "Quick Stats: Avg monthly: ${quickStats.avg_monthly_giving}, Goal progress: ${quickStats.giving_goal_progress.progress}%")
         
         // Show avg monthly giving in a temporary location
         binding.tvLastTransactionAmount.text = CurrencyUtils.formatCurrency(quickStats.avg_monthly_giving)
@@ -191,12 +198,12 @@ class MemberDashboardActivity : AppCompatActivity() {
             // Update church info
             it.member?.church?.let { church ->
                 binding.tvMemberChurch.text = church.name
-                binding.tvChurchVerified.visibility = android.view.View.VISIBLE
-                binding.tvChurchUnverified.visibility = android.view.View.GONE
+                binding.tvChurchVerified.visibility = View.VISIBLE
+                binding.tvChurchUnverified.visibility = View.GONE
             } ?: run {
                 binding.tvMemberChurch.text = "No church assigned"
-                binding.tvChurchVerified.visibility = android.view.View.GONE
-                binding.tvChurchUnverified.visibility = android.view.View.VISIBLE
+                binding.tvChurchVerified.visibility = View.GONE
+                binding.tvChurchUnverified.visibility = View.VISIBLE
             }
         }
     }
@@ -262,7 +269,7 @@ class MemberDashboardActivity : AppCompatActivity() {
         }
 
         val churchNames = churches.map { church -> church.name + " (" + church.code + ")" }
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         
         builder.setTitle("Transfer Church")
         builder.setItems(churchNames.toTypedArray()) { dialog, which ->
@@ -274,7 +281,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     }
 
     private fun showChurchTransferConfirmation(church: ChurchSearchResult) {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         
         builder.setTitle("Confirm Transfer to " + church.name)
         builder.setMessage("Are you sure you want to transfer to " + church.name + "? This will require church approval.")
@@ -288,13 +295,13 @@ class MemberDashboardActivity : AppCompatActivity() {
     private fun initiateChurchTransfer(church: ChurchSearchResult) {
         lifecycleScope.launch {
             try {
-                val transferRequest = com.altarfunds.mobile.models.ChurchTransferRequest(
+                val transferRequest = ChurchTransferRequest(
                     target_church_id = church.id,
                     target_church_code = church.code,
                     reason = "User requested transfer"
                 )
 
-                val response = com.altarfunds.mobile.api.ApiService.getApiInterface().transferChurch(transferRequest)
+                val response = ApiService.getApiInterface().transferChurch(transferRequest)
                 
                 if (response.isSuccessful) {
                     Toast.makeText(this@MemberDashboardActivity, "Transfer request sent successfully", Toast.LENGTH_SHORT).show()
@@ -308,7 +315,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     }
 
     private fun showChurchTransferPendingDialog(churchName: String) {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         
         builder.setTitle("Transfer Pending")
         builder.setMessage("Transfer request sent to " + churchName + ". Please wait for approval.")
@@ -318,7 +325,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     }
 
     private fun showChurchJoinDialog() {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         
         builder.setTitle("Join Church")
         builder.setMessage("Enter church details to join")
@@ -347,14 +354,13 @@ class MemberDashboardActivity : AppCompatActivity() {
     private fun joinChurch(churchCode: String, verificationData: String) {
         lifecycleScope.launch {
             try {
-                val joinRequest = com.altarfunds.mobile.models.ChurchJoinRequest(
-                    church_id = 0, // Will be resolved by backend using church_code
+                val joinRequest = ChurchJoinRequest( // Will be resolved by backend using church_code
                     church_code = churchCode,
-                    verification_method = "code",
-                    verification_data = verificationData
+                    church_name = "loading",
+                    user_id = (application as AltarFundsApp).preferencesManager.userId.toString()
                 )
 
-                val response = com.altarfunds.mobile.api.ApiService.getApiInterface().joinChurch(joinRequest)
+                val response = ApiService.getApiInterface().joinChurch(joinRequest)
                 
                 if (response.isSuccessful) {
                     Toast.makeText(this@MemberDashboardActivity, "Join request submitted successfully", Toast.LENGTH_SHORT).show()
@@ -368,7 +374,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     }
 
     private fun showChurchJoinPendingDialog() {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         
         builder.setTitle("Join Pending")
         builder.setMessage("Join request sent to church administrators. Please wait for approval.")
@@ -437,7 +443,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     private fun showStatementOptions() {
         val options = arrayOf("Monthly Statement", "Annual Statement", "Custom Period")
         
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("Select Statement Period")
             .setItems(options) { _, which ->
                 when (which) {
@@ -451,7 +457,7 @@ class MemberDashboardActivity : AppCompatActivity() {
     }
 
     private fun showCustomPeriodDialog() {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.dialog_custom_period, null)
         
@@ -473,8 +479,8 @@ class MemberDashboardActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val request = when (type) {
-                    "monthly" -> mapOf("month" to java.time.LocalDate.now().monthValue)
-                    "annual" -> mapOf("year" to java.time.LocalDate.now().year)
+                    "monthly" -> mapOf("month" to LocalDate.now().monthValue)
+                    "annual" -> mapOf("year" to LocalDate.now().year)
                     "custom" -> mapOf(
                         "start_date" to (startDate ?: ""),
                         "end_date" to (endDate ?: "")
@@ -482,7 +488,7 @@ class MemberDashboardActivity : AppCompatActivity() {
                     else -> return@launch
                 }
 
-                val response = com.altarfunds.mobile.api.ApiService.getApiInterface().getGivingStatements(
+                val response = ApiService.getApiInterface().getGivingStatements(
                     month = request["month"] as? Int,
                     year = request["year"] as? Int
                 )
@@ -502,7 +508,7 @@ class MemberDashboardActivity : AppCompatActivity() {
         val message = "Statement Generated Successfully!\n\n" +
             "The statement has been saved to your device and can be shared via email or WhatsApp."
         
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("Statement Ready")
             .setMessage(message)
             .setPositiveButton("Share") { _, _ ->
@@ -516,7 +522,7 @@ class MemberDashboardActivity : AppCompatActivity() {
 
     private fun shareStatement(statement: Any) {
         val shareText = "My AltarFunds Statement\n\n" +
-            "Generated on " + java.time.LocalDate.now()
+            "Generated on " + LocalDate.now()
         
         val shareIntent = Intent().apply {
             action = Intent.ACTION_SEND
@@ -532,12 +538,12 @@ class MemberDashboardActivity : AppCompatActivity() {
     }
 
     private fun showPINEntryDialog(purpose: String) {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         val inflater = layoutInflater
         // Create a simple PIN entry dialog
         val etPIN = EditText(this)
         etPIN.hint = "Enter 4-digit PIN"
-        etPIN.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
+        etPIN.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
         
         val tvPurpose = TextView(this)
         tvPurpose.text = when (purpose) {
@@ -547,8 +553,8 @@ class MemberDashboardActivity : AppCompatActivity() {
             else -> "Enter PIN"
         }
         
-        val container = android.widget.LinearLayout(this)
-        container.orientation = android.widget.LinearLayout.VERTICAL
+        val container = LinearLayout(this)
+        container.orientation = LinearLayout.VERTICAL
         container.setPadding(50, 50, 50, 50)
         container.addView(tvPurpose)
         container.addView(etPIN)
@@ -573,11 +579,11 @@ class MemberDashboardActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val pinRequest = com.altarfunds.mobile.models.PINVerifyRequest(
+                val pinRequest = PINVerifyRequest(
                     pin = pin,
                     purpose = purpose
                 )
-                val response = com.altarfunds.mobile.api.ApiService.getApiInterface().verifyPIN(pinRequest)
+                val response = ApiService.getApiInterface().verifyPIN(pinRequest)
 
                 if (response.isSuccessful) {
                     when (purpose) {
@@ -618,7 +624,7 @@ class MemberDashboardActivity : AppCompatActivity() {
         val message = "Church Information\n\n" +
             "Your church details will appear here once you join a church."
         
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("Church Details")
             .setMessage(message)
             .setPositiveButton("OK") { _, _ -> }

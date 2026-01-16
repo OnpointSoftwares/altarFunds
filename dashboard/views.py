@@ -23,23 +23,37 @@ def financial_summary(request):
     """Get financial summary for dashboard."""
     user = request.user
     
+    # Check if user has a church assigned
+    if not user.church:
+        return Response({
+            'totalIncome': 0,
+            'monthlyIncome': 0,
+            'totalExpenses': 0,
+            'monthlyExpenses': 0,
+            'netBalance': 0,
+            'church': None,
+            'message': 'No church assigned. Please join a church to view financial data.'
+        })
+    
+    church = user.church
+    
     # Calculate income (donations)
     total_income = GivingTransaction.objects.filter(
-        church=user.church
+        church=church
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     monthly_income = GivingTransaction.objects.filter(
-        church=user.church,
+        church=church,
         created_at__gte=timezone.now() - timedelta(days=30)
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     # Calculate expenses
     total_expenses = Expense.objects.filter(
-        church=user.church
+        church=church
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     monthly_expenses = Expense.objects.filter(
-        church=user.church,
+        church=church,
         created_at__gte=timezone.now() - timedelta(days=30)
     ).aggregate(total=Sum('amount'))['total'] or 0
     
@@ -48,8 +62,14 @@ def financial_summary(request):
         'monthlyIncome': monthly_income,
         'totalExpenses': total_expenses,
         'monthlyExpenses': monthly_expenses,
-        'netIncome': total_income - total_expenses,
-        'monthlyNetIncome': monthly_income - monthly_expenses,
+        'netBalance': total_income - total_expenses,
+        'church': {
+            'id': church.id,
+            'name': church.name,
+            'code': church.code,
+            'is_verified': church.is_verified,
+            'is_active': church.is_active
+        }
     })
 
 @api_view(['GET'])
@@ -57,6 +77,16 @@ def financial_summary(request):
 def monthly_trend(request):
     """Get monthly income/expense trend."""
     user = request.user
+    
+    # Check if user has a church assigned
+    if not user.church:
+        return Response({
+            'trend': [],
+            'church': None,
+            'message': 'No church assigned. Please join a church to view financial data.'
+        }, status=200)
+    
+    church = user.church
     months = 12
     
     trend_data = []
@@ -65,12 +95,12 @@ def monthly_trend(request):
         month_end = timezone.now() - timedelta(days=30 * (months - i - 2))
         
         income = GivingTransaction.objects.filter(
-            church=user.church,
+            church=church,
             created_at__range=[month_start, month_end]
         ).aggregate(total=Sum('amount'))['total'] or 0
         
         expenses = Expense.objects.filter(
-            church=user.church,
+            church=church,
             created_at__range=[month_start, month_end]
         ).aggregate(total=Sum('amount'))['total'] or 0
         
@@ -81,7 +111,16 @@ def monthly_trend(request):
             'net': income - expenses
         })
     
-    return Response(trend_data)
+    return Response({
+        'trend': trend_data,
+        'church': {
+            'id': church.id,
+            'name': church.name,
+            'code': church.code,
+            'is_verified': church.is_verified,
+            'is_active': church.is_active
+        }
+    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -89,12 +128,21 @@ def income_breakdown(request):
     """Get income breakdown by category."""
     user = request.user
     
-    categories = GivingCategory.objects.filter(church=user.church)
+    # Check if user has a church assigned
+    if not user.church:
+        return Response({
+            'breakdown': [],
+            'church': None,
+            'message': 'No church assigned. Please join a church to view financial data.'
+        }, status=200)
+    
+    church = user.church
+    categories = GivingCategory.objects.filter(church=church)
     breakdown = []
     
     for category in categories:
         total = GivingTransaction.objects.filter(
-            church=user.church,
+            church=church,
             category=category
         ).aggregate(total=Sum('amount'))['total'] or 0
         
@@ -102,11 +150,20 @@ def income_breakdown(request):
             'category': category.name,
             'amount': total,
             'percentage': (total / max(1, GivingTransaction.objects.filter(
-                church=user.church
+                church=church
             ).aggregate(total=Sum('amount'))['total'] or 1)) * 100
         })
     
-    return Response(breakdown)
+    return Response({
+        'breakdown': breakdown,
+        'church': {
+            'id': church.id,
+            'name': church.name,
+            'code': church.code,
+            'is_verified': church.is_verified,
+            'is_active': church.is_active
+        }
+    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -114,13 +171,23 @@ def expense_breakdown(request):
     """Get expense breakdown by category."""
     user = request.user
     
+    # Check if user has a church assigned
+    if not user.church:
+        return Response({
+            'breakdown': [],
+            'church': None,
+            'message': 'No church assigned. Please join a church to view financial data.'
+        }, status=200)
+    
+    church = user.church
+    
     # Group expenses by category
-    expenses = Expense.objects.filter(church=user.church).values('category').annotate(
+    expenses = Expense.objects.filter(church=church).values('category').annotate(
         total=Sum('amount'),
         count=Count('id')
     ).order_by('-total')
     
-    total_expenses = Expense.objects.filter(church=user.church).aggregate(
+    total_expenses = Expense.objects.filter(church=church).aggregate(
         total=Sum('amount')
     )['total'] or 1
     
@@ -133,4 +200,13 @@ def expense_breakdown(request):
             'percentage': (expense['total'] / total_expenses) * 100
         })
     
-    return Response(breakdown)
+    return Response({
+        'breakdown': breakdown,
+        'church': {
+            'id': church.id,
+            'name': church.name,
+            'code': church.code,
+            'is_verified': church.is_verified,
+            'is_active': church.is_active
+        }
+    })

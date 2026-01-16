@@ -6,6 +6,7 @@ from .views import (
     income_breakdown,
     expense_breakdown
 )
+from .comprehensive_views import comprehensive_dashboard
 
 app_name = 'dashboard'
 
@@ -18,4 +19,5 @@ urlpatterns = [
     path('monthly-trend/', monthly_trend, name='monthly_trend'),
     path('income-breakdown/', income_breakdown, name='income_breakdown'),
     path('expense-breakdown/', expense_breakdown, name='expense_breakdown'),
+    path('comprehensive/', comprehensive_dashboard, name='comprehensive_dashboard'),
 ]
