@@ -20,7 +20,7 @@ class GivingTransactionAdmin(admin.ModelAdmin):
         'member__user__email', 'member__user__first_name', 
         'member__user__last_name', 'payment_reference', 'transaction_id'
     ]
-    readonly_fields = ['transaction_id', 'created_at', 'updated_at']
+    readonly_fields = ['transaction_id', 'created_at', 'updated_at', 'created_by', 'updated_by']
     ordering = ['-transaction_date']
     
     fieldsets = (
@@ -34,10 +34,17 @@ class GivingTransactionAdmin(admin.ModelAdmin):
             'fields': ('status', 'transaction_date')
         }),
         ('System Information', {
-            'fields': ('transaction_id', 'created_at', 'updated_at'),
+            'fields': ('transaction_id', 'created_at', 'updated_at', 'created_by', 'updated_by'),
             'classes': ('collapse',)
         })
     )
+    
+    def save_model(self, request, obj, form, change):
+        """Automatically set created_by and updated_by fields"""
+        if not change:  # Creating new object
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(GivingCategory)
