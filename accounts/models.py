@@ -11,6 +11,8 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError(_('The Email must be set'))
         email = self.normalize_email(email)
+        # Set username to email to satisfy unique constraint
+        extra_fields.setdefault('username', email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
