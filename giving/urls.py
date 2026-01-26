@@ -13,7 +13,8 @@ from .views import (
 app_name = 'giving'
 
 router = DefaultRouter()
-router.register(r'categories', GivingCategoryViewSet)
+# Register with different prefixes to avoid conflicts
+router.register(r'categories-list', GivingCategoryViewSet)
 router.register(r'transactions', GivingTransactionViewSet)
 router.register(r'recurring', RecurringGivingViewSet)
 router.register(r'pledges', PledgeViewSet)
