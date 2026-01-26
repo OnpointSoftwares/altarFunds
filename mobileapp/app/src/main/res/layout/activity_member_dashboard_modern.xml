@@ -112,7 +112,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="₦0"
+                            android:text="KES 0"
                             android:textAppearance="?attr/textAppearanceHeadline6"
                             android:textColor="?attr/colorOnPrimaryContainer" />
 
@@ -173,7 +173,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="₦0"
+                            android:text="KES 0"
                             android:textAppearance="?attr/textAppearanceHeadline6"
                             android:textColor="?attr/colorOnErrorContainer" />
 
@@ -241,7 +241,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="₦0"
+                            android:text="KES 0"
                             android:textAppearance="?attr/textAppearanceHeadline6"
                             android:textColor="?attr/colorOnSecondaryContainer" />
 

@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.altarfunds.mobile.databinding.ActivityNewGivingBinding
+import com.altarfunds.mobile.models.GivingCategory
 import com.altarfunds.mobile.utils.CurrencyUtils
 import com.altarfunds.mobile.utils.ValidationUtils
 import kotlinx.coroutines.launch
@@ -63,11 +64,13 @@ class NewGivingActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val churchInfoResponse = com.altarfunds.mobile.api.ApiService.getApiInterface().getChurchInfo()
-                
-                if (churchInfoResponse.isSuccessful && churchInfoResponse.body() != null) {
-                    val categories = churchInfoResponse.body()!!.giving_categories
+                val response = com.altarfunds.mobile.api.ApiService.getApiInterface().getGivingCategories()
+
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val categories = response.body()?.data ?: emptyList()
                     setupCategorySpinner(categories)
+                } else {
+                    Toast.makeText(this@NewGivingActivity, "Failed to load categories", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@NewGivingActivity, "Failed to load categories", Toast.LENGTH_SHORT).show()
@@ -77,7 +80,7 @@ class NewGivingActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupCategorySpinner(categories: List<com.altarfunds.mobile.models.GivingCategory>) {
+    private fun setupCategorySpinner(categories: List<GivingCategory>) {
         val categoryNames = categories.map { it.name }
         val adapter = android.widget.ArrayAdapter(
             this,

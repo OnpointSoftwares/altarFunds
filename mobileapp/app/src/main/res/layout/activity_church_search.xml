@@ -135,7 +135,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Search Churches"
-                        app:icon="@drawable/ic_search"
+                        app:icon="@drawable/baseline_search_24"
                         app:iconGravity="textStart" />
 
                 </LinearLayout>
@@ -189,7 +189,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
-                tools:listitem="@layout/item_chu" />
+                tools:listitem="@layout/item_church" />
 
             <!-- No Results -->
             <LinearLayout

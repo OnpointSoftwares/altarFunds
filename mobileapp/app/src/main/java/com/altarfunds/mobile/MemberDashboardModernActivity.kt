@@ -2,7 +2,6 @@ package com.altarfunds.mobile
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -11,16 +10,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.altarfunds.mobile.adapters.TransactionAdapter
 import com.altarfunds.mobile.api.ApiService
 import com.altarfunds.mobile.databinding.ActivityMemberDashboardModernBinding
+import com.altarfunds.mobile.models.GivingTransaction
+import com.altarfunds.mobile.utils.CurrencyUtils
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import java.text.NumberFormat
-import java.util.Locale
 
 class MemberDashboardModernActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMemberDashboardModernBinding
     private lateinit var transactionAdapter: TransactionAdapter
-    private val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "NG"))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,62 +81,82 @@ class MemberDashboardModernActivity : AppCompatActivity() {
     }
 
     private fun loadDashboardData() {
-        binding.progressBar.visibility = View.VISIBLE
+        binding.progressBar?.visibility = View.VISIBLE
 
         lifecycleScope.launch {
             try {
-                // Load financial summary
-                val financialSummary = ApiService.getFinancialSummary()
-                updateFinancialSummary(financialSummary)
-
-                // Load recent transactions
-                val transactions = ApiService.getRecentTransactions(limit = 5)
-                updateRecentTransactions(transactions)
-
                 // Load user profile
-                val userProfile = ApiService.getUserProfile()
-                updateUserInfo(userProfile)
+                loadUserProfile()
+                
+                // Load financial summary
+                loadFinancialSummary()
+                
+                // Load recent transactions
+                loadRecentTransactions()
 
-                binding.progressBar.visibility = View.GONE
+                binding.progressBar?.visibility = View.GONE
             } catch (e: Exception) {
-                Log.e("Dashboard", "Error loading data", e)
-                binding.progressBar.visibility = View.GONE
-                Toast.makeText(this@MemberDashboardModernActivity, "Error loading data", Toast.LENGTH_SHORT).show()
+                binding.progressBar?.visibility = View.GONE
+                showError("Error loading data: ${e.message}")
             }
         }
     }
 
-    private fun updateFinancialSummary(summary: FinancialSummary) {
-        binding.totalIncome.text = CurrencyUtils.formatCurrency(summary.totalIncome)
-        binding.totalExpenses.text = CurrencyUtils.formatCurrency(summary.totalExpenses)
-        binding.netBalance.text = CurrencyUtils.formatCurrency(summary.netIncome)
-        
-        // Update balance status
-        binding.balanceStatus.text = if (summary.netIncome >= 0) {
-            "Positive cash flow"
-        } else {
-            "Negative cash flow"
-        }
-
-        // Update trends (mock data for now, can be calculated from historical data)
-        binding.incomeTrend.text = "+15%"
-        binding.expenseTrend.text = "+8%"
-    }
-
-    private fun updateRecentTransactions(transactions: List<GivingTransactionResponse>) {
-        if (transactions.isEmpty()) {
-            binding.recyclerRecentTransactions.visibility = View.GONE
-            binding.noTransactionsText.visibility = View.VISIBLE
-        } else {
-            binding.recyclerRecentTransactions.visibility = View.VISIBLE
-            binding.noTransactionsText.visibility = View.GONE
-            transactionHistoryAdapter.updateData(transactions)
+    private suspend fun loadUserProfile() {
+        try {
+            val response = ApiService.getApiInterface().getProfile()
+            if (response.isSuccessful && response.body()?.success == true) {
+                val user = response.body()?.data
+                binding.userName?.text = "${user?.first_name} ${user?.last_name}"
+                //binding.userName?.text = user?.church?.name ?: "No church"
+            }
+        } catch (e: Exception) {
+            // Silently fail for profile load
         }
     }
 
-    private fun updateUserInfo(user: User) {
-        binding.userName.text = user.first_name
-        binding.welcomeText.text = "Welcome back, ${user.first_name.split(" ").first()}!"
+    private suspend fun loadFinancialSummary() {
+        try {
+            val response = ApiService.getApiInterface().getFinancialSummaryBackend()
+            if (response.isSuccessful && response.body()?.success == true) {
+                val summary = response.body()?.data
+                
+                binding.totalIncome?.text = CurrencyUtils.formatCurrency(summary?.total_income ?: 0.0)
+                binding.totalExpenses?.text = CurrencyUtils.formatCurrency(summary?.total_expenses ?: 0.0)
+                binding.netBalance?.text = CurrencyUtils.formatCurrency(summary?.net_income ?: 0.0)
+            }
+        } catch (e: Exception) {
+            // Show default values on error
+            binding.totalIncome?.text = CurrencyUtils.formatCurrency(0.0)
+            binding.totalExpenses?.text = CurrencyUtils.formatCurrency(0.0)
+            binding.netBalance?.text = CurrencyUtils.formatCurrency(0.0)
+        }
+    }
+
+    private suspend fun loadRecentTransactions() {
+        try {
+            val response = ApiService.getApiInterface().getGivingHistoryBackend()
+            if (response.isSuccessful && response.body()?.success == true) {
+                val history = response.body()?.data
+                val transactions = history?.givings?.take(5) ?: emptyList()
+                
+                if (transactions.isEmpty()) {
+                    binding.recyclerRecentTransactions?.visibility = View.GONE
+                    binding.noTransactionsText?.visibility = View.VISIBLE
+                } else {
+                    binding.recyclerRecentTransactions?.visibility = View.VISIBLE
+                    binding.noTransactionsText?.visibility = View.GONE
+                    transactionAdapter.submitList(transactions as List<GivingTransaction?>?)
+                }
+            }
+        } catch (e: Exception) {
+            binding.recyclerRecentTransactions?.visibility = View.GONE
+            binding.noTransactionsText?.visibility = View.VISIBLE
+        }
+    }
+    
+    private fun showError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     private fun setupClickListeners() {

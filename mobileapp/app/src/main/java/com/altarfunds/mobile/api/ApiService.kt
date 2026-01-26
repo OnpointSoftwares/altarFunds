@@ -3,8 +3,14 @@ package com.altarfunds.mobile.api
 import com.altarfunds.mobile.AltarFundsApp
 import com.altarfunds.mobile.data.PreferencesManager
 import com.altarfunds.mobile.models.*
+import com.google.gson.Gson
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.Route
+import okhttp3.Authenticator
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -22,6 +28,7 @@ object ApiService {
     
     fun initialize(app: AltarFundsApp? = null) {
         preferencesManager = app?.preferencesManager
+        val gson = Gson()
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -41,10 +48,83 @@ object ApiService {
             
             chain.proceed(requestBuilder.build())
         }
+
+        val tokenAuthenticator = object : Authenticator {
+            override fun authenticate(route: Route?, response: Response): Request? {
+                val prefs = preferencesManager ?: return null
+
+                // Avoid infinite retry loops
+                var priorCount = 0
+                var priorResponse: Response? = response
+                while (priorResponse != null) {
+                    priorCount++
+                    priorResponse = priorResponse.priorResponse
+                }
+                if (priorCount >= 2) return null
+
+                val refreshToken = prefs.refreshToken
+                if (refreshToken.isNullOrBlank()) {
+                    prefs.clearUserData()
+                    return null
+                }
+
+                return try {
+                    val refreshUrl = BASE_URL + "auth/token/refresh/"
+                    val bodyJson = gson.toJson(mapOf("refresh" to refreshToken))
+                    val requestBody = okhttp3.RequestBody.create(
+                        "application/json".toMediaTypeOrNull(),
+                        bodyJson
+                    )
+
+                    val refreshRequest = Request.Builder()
+                        .url(refreshUrl)
+                        .post(requestBody)
+                        .build()
+
+                    val client = OkHttpClient.Builder()
+                        .connectTimeout(30, TimeUnit.SECONDS)
+                        .readTimeout(30, TimeUnit.SECONDS)
+                        .writeTimeout(30, TimeUnit.SECONDS)
+                        .build()
+
+                    val refreshResponse = client.newCall(refreshRequest).execute()
+                    if (!refreshResponse.isSuccessful) {
+                        refreshResponse.close()
+                        prefs.clearUserData()
+                        return null
+                    }
+
+                    val responseBody = refreshResponse.body?.string()
+                    refreshResponse.close()
+                    if (responseBody.isNullOrBlank()) {
+                        prefs.clearUserData()
+                        return null
+                    }
+
+                    val tokenMap = gson.fromJson(responseBody, Map::class.java)
+                    val newAccess = tokenMap["access"] as? String
+                    if (newAccess.isNullOrBlank()) {
+                        prefs.clearUserData()
+                        return null
+                    }
+
+                    prefs.authToken = newAccess
+
+                    response.request.newBuilder()
+                        .removeHeader("Authorization")
+                        .addHeader("Authorization", "Bearer $newAccess")
+                        .build()
+                } catch (_: Exception) {
+                    prefs.clearUserData()
+                    null
+                }
+            }
+        }
         
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .addInterceptor(authInterceptor)
+            .authenticator(tokenAuthenticator)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)

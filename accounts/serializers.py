@@ -52,7 +52,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         church = validated_data.pop('church', None)
 
         password = validated_data.pop('password')
-        validated_data['username'] = validated_data['email']
 
         user = User.objects.create_user(password=password, **validated_data)
         user.save()

@@ -5,8 +5,8 @@ import java.util.*
 
 object CurrencyUtils {
     
-    private const val CURRENCY_CODE = "NGN"
-    private const val LOCALE_COUNTRY = "NG"
+    private const val CURRENCY_CODE = "KES"
+    private const val LOCALE_COUNTRY = "KE"
     
     fun formatCurrency(amount: Double): String {
         val format = NumberFormat.getCurrencyInstance(Locale(LOCALE_COUNTRY))

@@ -129,7 +129,7 @@ class MobileGoogleLoginView(views.APIView):
         # Find or create user
         user = User.objects.filter(firebase_uid=sub).first() or User.objects.filter(email=email).first()
         if not user:
-            user = User.objects.create_user(username=email, email=email)
+            user = User.objects.create_user(email=email)
             user.set_unusable_password()
             user.firebase_uid = sub
             user.is_email_verified = token_info.get('email_verified') == 'true'
@@ -193,7 +193,7 @@ class MobileRegisterView(views.APIView):
                 'error_code': 'EMAIL_EXISTS'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(username=email, email=email, password=password)
+        user = User.objects.create_user(email=email, password=password)
         user.save()
         Member.objects.get_or_create(user=user)
 

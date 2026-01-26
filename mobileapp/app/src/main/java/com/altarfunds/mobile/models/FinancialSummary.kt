@@ -7,5 +7,5 @@ data class FinancialSummary(
     val totalDonations: Double,
     val budgetUtilization: Double,
     val period: String,
-    val currency: String = "NGN"
+    val currency: String = "KES"
 )

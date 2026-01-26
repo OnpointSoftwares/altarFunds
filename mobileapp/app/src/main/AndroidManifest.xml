@@ -59,6 +59,10 @@
             android:exported="false"
             android:screenOrientation="portrait"
             />
+        <activity android:name=".ChurchSearchActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            />
         <activity
             android:name="com.altarfunds.mobile.ForgotPasswordActivity"
             android:exported="false"

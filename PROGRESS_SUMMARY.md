@@ -6,6 +6,55 @@ This document tracks the transformation of the AltarFunds church management syst
 
 ---
 
+## 📱 Mobile App (Android) – Current Progress
+
+### ✅ What the app is doing so far
+
+#### 1) Currency switched to KES
+- Currency formatting updated from NGN to KES in the mobile app utilities and UI.
+
+#### 2) Authentication uses backend JWT endpoints
+- Login flow updated to use `POST /api/auth/token/`.
+- Access + refresh tokens are stored in the app preferences.
+
+#### 3) Auto token refresh + retry on 401
+- OkHttp `Authenticator` refreshes via `POST /api/auth/token/refresh/` when an access token expires.
+- Original request is retried with the new access token when refresh succeeds.
+
+#### 4) Giving categories load dynamically from backend
+- Giving categories are fetched from `GET /api/giving/categories/` and used to populate the category selector.
+
+#### 5) API path normalization (fix for double /api/api)
+- Retrofit endpoints were normalized so calls don’t become `.../api/api/...`.
+
+#### 6) Church search endpoint aligned to backend routing
+- Church search now targets `GET /api/churches/?search=...` (matches backend URL patterns).
+
+### ⏳ What is remaining (mobile)
+
+#### 1) Runtime verification (highest priority)
+- Verify **church search** returns non-404 and displays results.
+- Verify **login** succeeds and tokens persist across app restarts.
+- Verify **giving categories** load (non-404) and populate the UI.
+
+#### 2) Confirm all mobile endpoints match backend URL patterns
+- Ensure any remaining API calls aren’t pointing to non-existent `api/mobile/...` routes (except those explicitly listed in backend).
+- Confirm query parameter names match backend (e.g., `search=` vs `query=`).
+
+#### 3) Verify token refresh behavior end-to-end
+- Force token expiry (or wait) and confirm:
+  - 401 triggers refresh
+  - request retries
+  - user is logged out only if refresh fails
+
+#### 4) Payment/giving flow alignment (Paystack)
+- Confirm the mobile giving/payment flow uses the backend Paystack endpoints:
+  - `POST /api/payments/payments/initialize_paystack/`
+  - `GET /api/payments/payments/verify_payment/`
+- Ensure the UI handles success/failure and reconciliation correctly.
+
+---
+
 ## ✅ Completed Tasks
 
 ### 1. Backend Permission System Enhancement ✓

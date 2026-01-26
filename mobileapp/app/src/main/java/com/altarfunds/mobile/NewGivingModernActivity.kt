@@ -10,6 +10,7 @@ import com.altarfunds.mobile.api.ApiService
 import com.altarfunds.mobile.data.PreferencesManager
 import com.altarfunds.mobile.databinding.ActivityNewGivingBinding
 import com.altarfunds.mobile.services.PaystackPaymentService
+import com.altarfunds.mobile.utils.CurrencyUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
@@ -69,6 +70,7 @@ class NewGivingModernActivity : AppCompatActivity() {
                         android.R.layout.simple_dropdown_item_1line,
                         categoryNames
                     )
+                    // Update to use correct view ID
                     binding.spinnerCategory?.setAdapter(adapter)
                 }
             } catch (e: Exception) {
@@ -80,10 +82,11 @@ class NewGivingModernActivity : AppCompatActivity() {
     }
     
     private fun processPayment() {
-        val amountStr = binding.etAmount?.text.toString()
-        val givingTypeIndex = givingTypes.indexOf(binding.spinnerCategory?.text.toString().lowercase())
+        val amountStr = binding.etAmount?.text?.toString() ?: ""
+        val givingTypeText = binding.tvSelectedCategory?.text?.toString() ?: ""
+        val givingTypeIndex = givingTypeNames.indexOf(givingTypeText)
         val givingType = if (givingTypeIndex >= 0) givingTypes[givingTypeIndex] else "offering"
-        val note = binding.etNote?.text.toString()
+        val note = binding.etNote?.text?.toString() ?: ""
         
         // Validation
         if (amountStr.isEmpty()) {
@@ -97,7 +100,7 @@ class NewGivingModernActivity : AppCompatActivity() {
             return
         }
         
-        if (binding.spinnerCategory?.text.toString().isEmpty()) {
+        if (givingTypeText.isEmpty()) {
             Toast.makeText(this, "Please select giving type", Toast.LENGTH_SHORT).show()
             return
         }
@@ -115,13 +118,18 @@ class NewGivingModernActivity : AppCompatActivity() {
     
     private fun getChurchId(): Int {
         // Try to get church ID from preferences or user profile
-        return preferencesManager.getChurchId() ?: 1 // Default to 1 for testing
+        // For now, return a default value - you should implement proper church ID retrieval
+        return try {
+            preferencesManager.churchId
+        } catch (e: Exception) {
+            1 // Default church ID for testing
+        } as Int
     }
     
     private fun showConfirmationDialog(amount: Double, givingType: String, churchId: Int, note: String?) {
         MaterialAlertDialogBuilder(this)
             .setTitle("Confirm Payment")
-            .setMessage("You are about to give ₦${String.format("%.2f", amount)} as ${givingType.replace("_", " ").capitalize()}")
+            .setMessage("You are about to give ${CurrencyUtils.formatCurrency(amount)} as ${givingType.replace("_", " ").replaceFirstChar { it.uppercase() }}")
             .setPositiveButton("Proceed") { _, _ ->
                 initiatePayment(amount, givingType, churchId, note)
             }
@@ -144,7 +152,7 @@ class NewGivingModernActivity : AppCompatActivity() {
                     
                     MaterialAlertDialogBuilder(this)
                         .setTitle("Payment Successful!")
-                        .setMessage("Your giving of ₦${String.format("%.2f", amount)} has been received.\n\nReference: $reference")
+                        .setMessage("Your giving of ${CurrencyUtils.formatCurrency(amount)} has been received.\n\nReference: $reference")
                         .setPositiveButton("OK") { _, _ ->
                             finish()
                         }

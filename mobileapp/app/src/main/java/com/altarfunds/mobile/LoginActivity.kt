@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.altarfunds.mobile.api.ApiService
 import com.altarfunds.mobile.databinding.ActivityLoginBinding
 import com.altarfunds.mobile.models.GoogleLoginRequest
+import com.altarfunds.mobile.models.LoginCredentials
 import com.altarfunds.mobile.models.LoginRequest
 import com.altarfunds.mobile.utils.DeviceUtils
 import com.altarfunds.mobile.utils.ValidationUtils
@@ -79,27 +80,21 @@ class LoginActivity : AppCompatActivity() {
         // Perform login
         lifecycleScope.launch {
             try {
-                val deviceInfo = DeviceUtils.getDeviceInfo(this@LoginActivity)
-                val loginRequest = LoginRequest(
+                val credentials = LoginCredentials(
                     email = email,
-                    password = password,
-                    device_token = deviceInfo.deviceToken,
-                    device_type = "android",
-                    device_id = deviceInfo.deviceId,
-                    app_version = deviceInfo.appVersion,
-                    os_version = deviceInfo.osVersion
+                    password = password
                 )
 
-                val response = ApiService.getApiInterface().login(loginRequest)
+                val response = ApiService.getApiInterface().loginBackend(credentials)
 
                 if (response.isSuccessful && response.body() != null) {
-                    val loginResponse = response.body()!!
+                    val tokenResponse = response.body()!!
 
-                    // Save user session
                     val preferencesManager = (application as AltarFundsApp).preferencesManager
-                    preferencesManager.saveUserSession(loginResponse)
+                    preferencesManager.authToken = tokenResponse.access
+                    preferencesManager.refreshToken = tokenResponse.refresh
+                    preferencesManager.userEmail = email
 
-                    // Navigate to member dashboard
                     startActivity(Intent(this@LoginActivity, MemberDashboardModernActivity::class.java))
                     finish()
                 } else {

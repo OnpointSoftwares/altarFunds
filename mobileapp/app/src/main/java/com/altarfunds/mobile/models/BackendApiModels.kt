@@ -1,8 +1,6 @@
 package com.altarfunds.mobile.models
 
-import com.google.gson.annotations.SerializedName
-
-// Generic API Response Wrapper
+// Generic API Response Wrapper for backend
 data class ApiResponse<T>(
     val success: Boolean,
     val data: T?,
@@ -51,7 +49,14 @@ data class ChurchBasic(
     val name: String
 )
 
-data class Church(
+data class ChurchList(
+    val count: Int,
+    val next: String?,
+    val previous: String?,
+    val results: List<ChurchDetail>
+)
+
+data class ChurchDetail(
     val id: Int,
     val name: String,
     val location: String?,
@@ -61,16 +66,9 @@ data class Church(
     val denomination: String?
 )
 
-data class ChurchList(
-    val count: Int,
-    val next: String?,
-    val previous: String?,
-    val results: List<Church>
-)
-
 data class JoinChurchResponse(
     val message: String,
-    val church: Church
+    val church: ChurchDetail
 )
 
 data class TransferChurchRequest(
@@ -90,10 +88,10 @@ data class RejectReason(
 
 data class MemberList(
     val count: Int,
-    val members: List<Member>
+    val members: List<MemberDetail>
 )
 
-data class Member(
+data class MemberDetail(
     val id: Int,
     val user: UserProfile,
     val joined_date: String
@@ -103,20 +101,20 @@ data class Member(
 data class GivingHistory(
     val total_given: Double,
     val transaction_count: Int,
-    val givings: List<GivingTransaction>
+    val givings: List<GivingTransactionDetail>
 )
 
-data class GivingTransaction(
+data class GivingTransactionDetail(
     val id: Int,
     val amount: Double,
-    val category: GivingCategory,
+    val category: GivingCategoryDetail,
     val transaction_date: String,
     val status: String,
     val payment_method: String?,
     val reference: String?
 )
 
-data class GivingCategory(
+data class GivingCategoryDetail(
     val id: Int,
     val name: String,
     val description: String?,
@@ -181,11 +179,11 @@ data class FinancialSummaryReport(
 )
 
 data class GivingTrends(
-    val trends: List<TrendData>,
+    val trends: List<TrendDataDetail>,
     val by_type: List<CategorySummary>
 )
 
-data class TrendData(
+data class TrendDataDetail(
     val period: String,
     val total: Double,
     val count: Int

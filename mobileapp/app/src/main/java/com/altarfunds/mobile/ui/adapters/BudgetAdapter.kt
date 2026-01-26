@@ -17,9 +17,9 @@ class BudgetAdapter(
     class BudgetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val budgetName: TextView = itemView.findViewById(R.id.budget_name)
         val budgetCategory: TextView = itemView.findViewById(R.id.budget_category)
-        val budgetAmount: TextView = itemView.findViewById(R.id.budget_amount)
-        val budgetSpent: TextView = itemView.findViewById(R.id.budget_spent)
-        val budgetRemaining: TextView = itemView.findViewById(R.id.budget_remaining)
+        val budgetAmount: TextView = itemView.findViewById(R.id.tv_budget_amount)
+        val budgetSpent: TextView = itemView.findViewById(R.id.tv_spent_amount)
+        val budgetRemaining: TextView = itemView.findViewById(R.id.tv_remaining_amount)
         val budgetProgress: ProgressBar = itemView.findViewById(R.id.budget_progress)
     }
 
