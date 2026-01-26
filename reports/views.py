@@ -62,19 +62,26 @@ def financial_summary(request):
         
         # Calculate expenses
         expenses = Expense.objects.filter(
-            church_filter,
             date_filter,
             status='approved'
         )
+        
+        # Apply church filter for expenses through user's church
+        if user.role != 'system_admin':
+            expenses = expenses.filter(user__church=user.church)
         total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         
         # Calculate net income
         net_income = total_income - total_expenses
         
         # Calculate budget utilization
-        budgets = Budget.objects.filter(church_filter, isActive=True)
-        total_budget = budgets.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-        budget_spent = budgets.aggregate(total=Sum('spent'))['total'] or Decimal('0.00')
+        budgets = Budget.objects.all()
+        
+        # Apply church filter for budgets through user's church
+        if user.role != 'system_admin':
+            budgets = budgets.filter(user__church=user.church)
+        total_budget = budgets.aggregate(total=Sum('allocated_amount'))['total'] or Decimal('0.00')
+        budget_spent = budgets.aggregate(total=Sum('spent_amount'))['total'] or Decimal('0.00')
         budget_utilization = (float(budget_spent) / float(total_budget) * 100) if total_budget > 0 else 0
         
         # Income by category

@@ -156,7 +156,7 @@ class ChurchListCreateView(generics.ListCreateAPIView):
         elif user.role == 'denomination_admin':
             return Church.objects.filter(denomination=user.church.denomination)
         else:
-            return Church.objects.filter(church=user.church)
+            return Church.objects.filter(id=user.church.id)
     
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -198,7 +198,7 @@ class ChurchDetailView(generics.RetrieveUpdateAPIView):
         elif user.role == 'denomination_admin':
             return Church.objects.filter(denomination=user.church.denomination)
         else:
-            return Church.objects.filter(church=user.church)
+            return Church.objects.filter(id=user.church.id)
     
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
