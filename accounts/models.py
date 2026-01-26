@@ -127,7 +127,8 @@ class Member(models.Model):
     monthly_giving_goal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.church.name}"
+        church_name = self.church.name if self.church else "No Church"
+        return f"{self.user.get_full_name()} - {church_name}"
 
 class UserSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
