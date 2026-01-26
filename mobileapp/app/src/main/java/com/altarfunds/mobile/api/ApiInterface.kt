@@ -161,7 +161,7 @@ interface ApiInterface {
     ): Response<GivingStatementResponse>
     
     @POST("giving/transactions/")
-    suspend fun createGivingTransaction(@Body transactionRequest: GivingTransactionRequest): Response<GivingTransactionResponse>
+    suspend fun createGivingTransaction(@Body transactionRequest: GivingTransactionRequest): Response<ApiResponse<GivingTransactionResponse>>
     
     @POST("payments/requests/")
     suspend fun initiatePayment(@Body paymentRequest: PaymentRequest): Response<PaymentResponse>

@@ -68,6 +68,95 @@ def giving_categories(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_giving_transaction(request):
+    """Create a giving transaction from mobile app"""
+    try:
+        user = request.user
+        logger.info(f"Creating giving transaction for user: {user.email}")
+        
+        # Check if user has a church
+        if not user.church:
+            logger.warning(f"User {user.email} has no church assigned")
+            return Response({
+                'success': False,
+                'message': 'User is not associated with any church',
+                'data': None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the member profile for the user
+        try:
+            member = user.member_profile
+        except:
+            logger.warning(f"User {user.email} has no member profile")
+            return Response({
+                'success': False,
+                'message': 'User member profile not found',
+                'data': None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get request data
+        data = request.data
+        
+        # Validate required fields
+        if 'category' not in data or 'amount' not in data:
+            return Response({
+                'success': False,
+                'message': 'Category and amount are required',
+                'data': None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get category
+        try:
+            category = GivingCategory.objects.get(
+                id=data['category'], 
+                church=user.church, 
+                is_active=True
+            )
+        except GivingCategory.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Invalid category',
+                'data': None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create transaction
+        transaction = GivingTransaction.objects.create(
+            member=member,
+            church=user.church,
+            category=category,
+            amount=data['amount'],
+            payment_method=data.get('payment_method', 'mpesa'),
+            transaction_type='one_time',
+            status='pending',
+            transaction_date=timezone.now().date(),
+            created_by=user,
+            updated_by=user,
+            note=data.get('note', ''),
+            is_anonymous=data.get('is_anonymous', False)
+        )
+        
+        logger.info(f"Created transaction {transaction.transaction_id} for user {user.email}")
+        
+        # Serialize and return
+        serializer = GivingTransactionSerializer(transaction)
+        
+        return Response({
+            'success': True,
+            'message': 'Transaction created successfully',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        logger.error(f"Error creating giving transaction: {str(e)}")
+        return Response({
+            'success': False,
+            'message': 'Failed to create transaction',
+            'data': None
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class GivingCategoryViewSet(viewsets.ModelViewSet):
     queryset = GivingCategory.objects.all()
     serializer_class = GivingCategorySerializer

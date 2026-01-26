@@ -216,12 +216,30 @@ class NewGivingActivity : AppCompatActivity() {
                 val response = com.altarfunds.mobile.api.ApiService.getApiInterface()
                     .createGivingTransaction(transactionRequest)
 
-                if (response.isSuccessful && response.body() != null) {
-                    val transaction = response.body()!!
-                    
-                    // Initiate payment
-                    initiatePayment(transaction.transaction_id, amount)
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    if (responseBody?.success == true) {
+                        val transaction = responseBody.data
+                        if (transaction != null) {
+                            // Initiate payment
+                            initiatePayment(transaction.transaction_id, amount)
+                        } else {
+                            Toast.makeText(
+                                this@NewGivingActivity,
+                                "Transaction creation failed: No data returned",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } else {
+                        Toast.makeText(
+                            this@NewGivingActivity,
+                            "Transaction creation failed: ${responseBody?.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 } else {
+                    val errorBody = response.errorBody()?.string()
+                    android.util.Log.e("NewGivingActivity", "Transaction creation error: ${response.code()} - $errorBody")
                     Toast.makeText(
                         this@NewGivingActivity,
                         "Failed to create transaction: ${response.message()}",
